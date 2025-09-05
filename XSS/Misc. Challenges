@@ -1,0 +1,111 @@
+# Challenges
+
+# DOM XSS in ```document.write``` sink using source ```location.search```
+## Observations
+- Queries are reflected in the page after searching. 
+- JavaScript in the page after searching uses unsafe DOM objects with the user input. 
+- Summary of JS:
+1. The trackSearch function
+```
+function trackSearch(query) {
+    document.write('<img src="/resources/images/tracker.gif?searchTerms='+query+'">');
+}
+```
+	•	Defines a function trackSearch that takes a string query.
+	•	When called, it writes raw HTML directly into the document (document.write).
+	•	That HTML is an <img> tag, pointing to:
+/resources/images/tracker.gif?searchTerms=<whatever query is>
+	•	This acts like a tracking pixel: the image loads (even if it’s 1x1 invisible), sending the user’s search query to the server via the query string.
+2. Extracting the search parameter from the URL
+```
+var query = (new URLSearchParams(window.location.search)).get('search');
+```
+	•	window.location.search = everything after the ? in the URL.
+Example:
+https://site.com/page?search=dogs
+
+```window.location.search = "?search=dogs"```
+	•	new URLSearchParams(...) parses the query string into key/value pairs.
+	•	.get('search') pulls out the value of the search parameter.
+Example: dogs
+	•	So if the URL has ?search=dogs, then query = "dogs".
+
+3. Conditional execution
+```
+if(query) {
+    trackSearch(query);
+}
+```
+	•	If a search parameter exists and isn’t null/empty, the script calls trackSearch(query).
+	•	That means the tracking pixel only loads if there is a search term in the URL.
+
+4. Putting it all together
+	•	User navigates to:
+https://site.com/page?search=dogs
+	•	Script runs:
+	•	Extracts "dogs"
+	•	Injects into page:
+```<img src="/resources/images/tracker.gif?searchTerms=dogs">```
+	•	Browser requests /resources/images/tracker.gif?searchTerms=dogs
+	•	Server logs that request → now the site operators know someone searched "dogs".
+
+So, I threw a Canary into the search, found the sink and used DOMInvader to solve the challenge. 
+
+# DOM XSS in ```innerHTML``` sink
+## Observations
+Similar to the above issue:
+```
+<script>
+    function doSearchQuery(query) {
+        document.getElementById('searchMessage').innerHTML = query;
+    }
+    var query = (new URLSearchParams(window.location.search)).get('search');
+    if(query) {
+        doSearchQuery(query);
+    }
+</script> 
+```
+- Threw my DOM Invader canary into the search to find the sink and then used it to finish the lab.
+
+# DOM XSS in jQuery selector sink using a hashchange event
+## Observations
+```
+<script>
+    $(window).on('hashchange', function(){
+        var post = $('section.blog-list h2:contains(' + decodeURIComponent(window.location.hash.slice(1)) + ')');
+        if (post) post.get(0).scrollIntoView();
+    });
+</script>
+```
+https://developer.mozilla.org/en-US/docs/Web/API/Window/hashchange_event
+
+- Within the page itself, there is no hash routing being used. But, we're provided an exploit server so its probably something that requires coercion. 
+- That was it, here's the payload:
+```
+<iframe src="https://0a1800b3048970db81884353006c00c4.web-security-academy.net/#" onload="this.src+='<img src=x onerror=print()>'"></iframe>
+```
+At first, I didn't have this.src but it worked on me and I couldn't figure that out. 
+Here's an analysis of why that is:
+- They run in different contexts:
+-- The first payload without the this.src was running in the original page that I loaded the iframe in, not the iframe where the vulnerable DOM sink was. 
+-- The second payload actually runs in the target window within the iframe so the # is replaced by the payload and provided to the sink for execution. 
+
+	•	Payload 1 (works)
+```
+<iframe src="https://victim/#" onload="this.src+='<img src=x onerror=print()>'"></iframe>
+```
+This doesn’t try to run print() itself. Instead, it mutates the iframe’s URL fragment (adds #<img src=x onerror=print()>). That triggers a hashchange inside the framed page. The victim page’s script runs on that event:
+```
+$(window).on('hashchange', function () {
+  var q = decodeURIComponent(window.location.hash.slice(1));
+  var post = $('section.blog-list h2:contains(' + q + ')');
+  if (post) post.get(0).scrollIntoView();
+});
+```
+Because the code directly concatenates the decoded hash into a jQuery selector without quoting, your attacker-controlled fragment is consumed by the victim’s own JS in the victim context (the iframe’s window). That’s the crucial bit: you’re not executing from your page; you’re making the victim page execute with your data, which is what makes the exploit “land”.
+
+	•	Payload 2 (doesn’t work)
+
+```<iframe src="https://victim/#" onload=print()></iframe>```
+
+The onload handler here runs in the parent document’s execution context (the page that contains the <iframe>), not inside the framed origin. So print() targets the parent page, not the victim page. Modern browsers also often suppress window.print() when it’s called on load without a user gesture—especially from an <iframe>—so nothing visible happens for the victim.

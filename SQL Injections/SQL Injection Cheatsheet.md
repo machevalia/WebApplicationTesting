@@ -2,6 +2,8 @@
 
 This guide combines practical methodology and cross-DBMS payloads to help you discover, enumerate, and exploit SQL injection during assessments. Use only with explicit authorization. For background reading and variations, see the Invicti SQL Injection Cheat Sheet (`https://www.invicti.com/blog/web-security/sql-injection-cheat-sheet/`) and OWASP references.
 
+(`https://github.com/kleiton0x00/Advanced-SQL-Injection-Cheatsheet`)
+
 ## 0) Quick Triage Workflow
 
 1. Identify injection surface: every input sink (query params, POST body, JSON, headers, cookies, path, hidden fields).
