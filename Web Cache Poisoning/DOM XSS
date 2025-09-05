@@ -1,0 +1,34 @@
+## Challenge
+In a Shop site, find the function that causes a DOM XSS via web cache poisoning.
+What we know is that the page has strict caching criteria. 
+### Observations:
+- There is an interesting JS function that sets your geolocation in order to determine shipping. - Find out where it's getting that from. 
+- Requesting / without a session cookie, we don't get the cache headers. Cache-Control is 30 seconds.
+- Copied in the session token to see cache controls with session.
+- /?cb=cachebuster-foo > cache buster works. Just need to rotate the value of cb
+- Sent new CB request to ParamMiner. Found x-forwarded-for header is viable. 
+```
+Initiating header bruteforce on 0afd00e903a755f58184f74e00b400d7.web-security-academy.net
+Identified parameter on 0afd00e903a755f58184f74e00b400d7.web-security-academy.net: x-forwarded-host~%s.%h
+```
+- Reset the CB again and added ```X-Forwarded-Host: example.com``` and then sent that through 2x and searched the response body for the example.com string. It was found in  a data dictionary "host":"example.com","path":"/"
+This is later used in 
+```
+<script>
+     initGeoLocate('//' + data.host + '/resources/json/geolocate.json');
+</script>
+```
+- What this is doing is loading the data.host value (URL)/resources/json/geolocate.json. We could then copy that format within the legitimate geolocate.js function to inject an XSS payload. Because, the country value from that JS file is being used to determine the free shipping. 
+- Exploit:
+-- Host our own version of geolocate.json
+-- In the exploit server, copy the FQDN and put that in the header value, send a new CB req through to see in the access log that it is hit by the victim. 
+-- Grab the value from the legitimate geolocate.json file and create my own copy of it with an XSS payload on the exploit server, the repeat the process of poisoning the cache. The value of that will be:
+```
+{
+    "country": "<img src=x onerror=alert(document.cookie) />"
+}
+```
+-- Sent the value through cache miss then again for a cache hit, copied the CB value and then went over to the browser and loaded the page but in the dev tools network tab we can see there is a CORS error on our geolocate.json file. So we need to relax the CORS. 
+--- In the original /resources/json/geolocate.json we can see the original request is being sent with the header Sec-Fetch-Mode: cors. So we need to relax that policy in the headers on the exploit server with the additional response header - ```Access-Control-Allow-Origin: *```
+-- Try again and it works. By relaxing the access controls for CORS we successfully deliver the payload. 
+- To deliver the vulnerability to the victim remove the cache buster and redo the exploit. 
