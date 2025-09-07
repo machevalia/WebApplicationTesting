@@ -16,6 +16,39 @@ Note: Examples shown as inline fragments to append to a vulnerable parameter. Al
 
 Reference for automated support: [sqlmap](https://en.wikipedia.org/wiki/Sqlmap)
 
+## Decision tree: question-driven SQLi hunting
+
+1) Does input reach SQL? Identify injection type
+- Send minimal breakers with correct comment style: `'`, `"`, `)`, `-- `, `/*`.
+- Observe: DB error text, response length/status deltas, or timing changes.
+- If no visible signal, try OOB-safe probes (DNS) appropriate for the stack.
+
+2) Is data reflected to the response?
+- Yes → Use UNION (in-band). Find column count and printable columns, then enumerate.
+- No, but DB error leaks → Use error-based extraction (type casts, XML/arith errors).
+- No reflection, no error → Blind boolean/time; do length/ASCII with binary search. Consider OOB.
+
+3) Fingerprint DBMS early
+- Comments: `-- `, `/*...*/`, `#` (MySQL only)
+- Concat: Oracle/PSQL `'||'`; MSSQL `'+'`; MySQL `CONCAT()` / `'a' 'b'`
+- Version/sleep primitives: `@@version`, `version()`, `v$version`; `SLEEP/WAITFOR/pg_sleep/dbms_pipe`.
+
+4) Choose technique by context
+- Results render → UNION-based.
+- Verbose DB errors → Error-based.
+- Silent app → Blind boolean/time or OOB.
+- Stacked queries allowed → Enable OOB/side effects (be cautious).
+
+5) Execute minimal path
+- Confirm injection → DBMS fingerprint → technique selection → schema enum → target data extraction.
+
+6) Safety and robustness
+- Terminate cleanly with correct comment syntax (MySQL `-- ` requires trailing space).
+- Mirror original quoting/parentheses; keep payload short and type-compatible (use `NULL`).
+- On Oracle, use `FROM dual` where needed.
+
+See `SQL Injections/wordlists/README.md` for context-to-list mapping and per-DBMS payloads.
+
 ---
 
 ## Microsoft SQL Server (MSSQL)

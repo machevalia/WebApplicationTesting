@@ -1,0 +1,5 @@
+<iframe srcdoc="<script>alert(1)</script>"></iframe>
+<iframe srcdoc="<script>confirm(1)</script>"></iframe>
+<iframe srcdoc="<script>print()</script>"></iframe>
+<iframe srcdoc="<img src=x onerror=alert(1)>"></iframe>
+

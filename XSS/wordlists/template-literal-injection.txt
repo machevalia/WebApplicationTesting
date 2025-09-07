@@ -1,0 +1,6 @@
+${alert(1)}
+${confirm(1)}
+${print()}
+${(()=>{alert(1)})()}
+${(new Function`alert(1)`)()}
+

@@ -1,0 +1,4 @@
+" accesskey=x onclick=alert(1) x="
+" accesskey=x onfocus=alert(1) tabindex=1 x="
+" rel=canonical accesskey=x onclick=alert(1) x="
+

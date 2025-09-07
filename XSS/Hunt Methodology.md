@@ -13,6 +13,44 @@ Key wordlists in this repo
 
 ---
 
+## Decision tree: question-driven XSS hunting
+
+1) Where does your input land in the final DOM?
+- HTML text node → try tag/attribute injection. Use `tags-probe.txt`, then `js-autoexec.txt` or `tags-events-payloads-core.txt`.
+- Attribute value (e.g., `href`, `src`, `title`) → use `attribute-breakouts.txt`; if it’s a URL attribute, also try `javascript-url-payloads.txt`.
+- Event handler code (e.g., `onclick="…"`) → use `attribute-breakouts.txt` (handler breakouts) or `js-string-breakouts.txt` if quotes are escaped.
+- Inside a JavaScript string/template → use `js-string-breakouts.txt` or `template-literal-injection.txt`.
+- Inside JSON that is `eval()`/`Function()`’d → use `json-breakouts.txt`.
+- SVG-only or SVG-allowed contexts → try `svg-restricted-events.txt` first; then pointer/focus fallbacks.
+
+2) How is it transformed/encoded?
+- `<`/`>` encoded but quotes intact → attribute/URL payloads still viable; use `attribute-breakouts.txt`, `javascript-url-payloads.txt`.
+- Single quotes escaped but backslash not → use backslash-cancel trick in `js-string-breakouts.txt`.
+- Angle brackets and double quotes encoded, single quotes escaped → prefer backslash-cancel or non-angle vectors (e.g., template literal, event handler breakouts).
+- Everything Unicode-escaped except `${}` and backticks → use `template-literal-injection.txt`.
+
+3) Is this DOM-based? Which source and sink?
+- Sources: `location.search/hash`, `document.cookie`, `postMessage`, XHR/fetch response.
+- Sinks: `innerHTML`, `document.write`, jQuery `.html()/.attr()`, `eval/new Function`, `setTimeout(string)`.
+- Use the browser DevTools/DOM Invader to identify the exact sink. Map sink to list as per step 1.
+
+4) Is there CSP?
+- If inline scripts/handlers blocked: prefer SVG SMIL `onbegin` timing, `javascript:` URLs (if allowed), or sandboxed `iframe srcdoc` if permitted by CSP. Avoid `<script>` PoCs.
+
+5) Can you trigger without user interaction?
+- Prefer auto-exec: `onerror`, `onload`, `meta refresh`, `iframe srcdoc`. See `js-autoexec.txt` and `iframe-srcdoc.txt`.
+- If not, use focus/pointer events. Add `tabindex` and rely on fragment focus (`#id`) when feasible. See `custom-tags-only.txt` and `tags-events-payloads-core.txt`.
+
+6) Special cases to check early
+- Canonical link tag: attribute injection on `<link rel=canonical>` (use `canonical-link-attr.txt`).
+- AngularJS 1.x expressions reflected: use `angularjs-expressions.txt`.
+- URL attributes (`href/src`): try `javascript-url-payloads.txt` and case/whitespace variants.
+
+7) Confirm execution cleanly
+- Prefer OAST callbacks over visual alerts where possible. See detection tips in `wordlists/README.md`.
+
+---
+
 ## 1) Recon and context mapping
 - Enumerate all sinks: query params, POST fields, JSON, headers, cookies, path segments, fragment.
 - Reflect vs store: check immediate reflection (Reflected XSS) and persistent surfaces (Stored XSS).

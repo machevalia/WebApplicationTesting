@@ -9,16 +9,37 @@ This folder contains reusable wordlists to test HTML-tag blacklists and attribut
 - js-autoexec.txt: Elements with auto-executing vectors (onerror/onload/srcdoc/javascript: etc.).
 - tags-events-payloads-core.txt: Expanded combinations for high-signal tags, a quick-start list.
 
+New/targeted lists:
+- attribute-breakouts.txt: Break out of attribute values and inline handlers (includes `&apos;` decoding case).
+- js-string-breakouts.txt: Break out of JS strings; backslash-cancel patterns for escaped quotes.
+- template-literal-injection.txt: Minimal `${...}` payloads for template literal contexts.
+- angularjs-expressions.txt: AngularJS 1.x expression payloads for DOM-based contexts.
+- javascript-url-payloads.txt: `javascript:` URL variations for `href/src` contexts.
+- iframe-srcdoc.txt: `srcdoc`-based auto-exec vectors.
+- canonical-link-attr.txt: Attribute injection patterns for `<link rel="canonical">` with accesskey/onclick.
+
 Usage suggestions:
 - Start with `tags-probe.txt` to see which tags are blocked.
 - If tags pass, try `js-autoexec.txt` for auto-exec contexts.
 - Use `tags-events-payloads-core.txt` for broad, interactive coverage.
 - Combine `tags-probe.txt` + `events.txt` + `payloads.txt` to generate full lists if needed.
+  - For attribute URL contexts, also combine with `javascript-url-payloads.txt`.
 
 Examples:
 - `<body =1>`
 - `<img src=x onerror=prompt(1)>`
 - `<iframe srcdoc="<script>prompt(1)</script>"></iframe>`
+
+Context-to-list mapping quick reference:
+- HTML text → `tags-probe.txt`, `tags-events-payloads-core.txt`, `js-autoexec.txt`.
+- Attribute value (URL/non-URL) → `attribute-breakouts.txt`; URL: add `javascript-url-payloads.txt`.
+- Inline handler code → `attribute-breakouts.txt` (handler variants), or `js-string-breakouts.txt` when quotes escaped.
+- JS string → `js-string-breakouts.txt`.
+- Template literal → `template-literal-injection.txt`.
+- JSON eval/Function → `json-breakouts.txt`.
+- SVG-only → `svg-restricted-events.txt`.
+- Canonical `<link>` → `canonical-link-attr.txt`.
+- Auto-exec without interaction → `js-autoexec.txt`, `iframe-srcdoc.txt`.
 
 ### Detecting success (Burp Intruder + grep)
 

