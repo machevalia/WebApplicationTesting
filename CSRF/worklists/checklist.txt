@@ -1,0 +1,28 @@
+Targets
+- List all state-changing endpoints (profile, email, password, funds, role, delete, 2FA).
+- Identify forms and AJAX calls; note method and content-type.
+
+Session and cookies
+- Is a session cookie required? What is SameSite (Strict/Lax/None)?
+- Any helper cookies involved in CSRF (csrfKey/duplicate CSRF)?
+
+Protections
+- CSRF token present? Hidden field, header, meta? Required on server?
+- Token properties: per-request? session-bound? user-bound? reusable?
+- Double-submit cookie used? Is equality the only check?
+- Origin/Referer validated? Strict host match? Presence-only? Substring?
+- Custom header requirement (X-Requested-With) or JSON-only?
+
+Behavior tests
+- Remove token → still works?
+- Reuse token → works multiple times?
+- Cross-user token → works for another user?
+- Mismatch double-submit → blocked?
+- Remove Referer (meta no-referrer) → still accepted?
+- Force unsafe-url Referer and pad query → accepted?
+- Top-level GET navigation with Lax → works?
+- `_method=POST` accepted on GET → works?
+- Cookie CRLF seed possible on any endpoint → seed then submit works?
+- OAuth refresh or in-app redirect re-origination available?
+- WebSocket Origin missing/weak → CSWSH viable?
+

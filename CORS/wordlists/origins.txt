@@ -1,0 +1,13 @@
+https://attacker.com
+http://attacker.com
+https://sub.attacker.com
+https://trusted.com.attacker.com
+https://attacker.com/trusted.com
+null
+http://localhost
+http://127.0.0.1
+https://example.com
+http://example.com
+https://sub.victim.com
+http://sub.victim.com
+

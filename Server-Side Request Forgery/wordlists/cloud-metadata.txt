@@ -1,0 +1,12 @@
+# AWS
+http://169.254.169.254/latest/meta-data/
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
+http://169.254.169.254/latest/user-data/
+
+# GCP (requires header: Metadata-Flavor: Google)
+http://metadata.google.internal/computeMetadata/v1/
+http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
+
+# Azure
+http://169.254.169.254/metadata/instance?api-version=2021-02-01
+

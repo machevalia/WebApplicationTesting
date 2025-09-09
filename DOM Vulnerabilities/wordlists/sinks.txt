@@ -1,0 +1,16 @@
+innerHTML
+outerHTML
+insertAdjacentHTML
+document.write
+setAttribute('href')
+setAttribute('src')
+location.href
+location.assign
+location.replace
+open(
+eval(
+setTimeout(
+setInterval(
+new Function(
+createContextualFragment
+

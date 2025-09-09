@@ -1,0 +1,9 @@
+# Try these as candidate sinks if parameters are not obvious
+Referer: http://{domain}/hit
+X-Forwarded-Host: {domain}
+X-Original-URL: http://127.0.0.1/
+Forwarded: for=127.0.0.1;host={domain};proto=http
+
+# GCP metadata header (use when targeting GCP endpoints)
+Metadata-Flavor: Google
+

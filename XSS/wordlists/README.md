@@ -17,6 +17,7 @@ New/targeted lists:
 - javascript-url-payloads.txt: `javascript:` URL variations for `href/src` contexts.
 - iframe-srcdoc.txt: `srcdoc`-based auto-exec vectors.
 - canonical-link-attr.txt: Attribute injection patterns for `<link rel="canonical">` with accesskey/onclick.
+ - xsshunter-inspired.txt: High-ROI XSShunter-style payloads (base64-in-attr loaders, jquery getScript, svg onload, input autofocus).
 
 Usage suggestions:
 - Start with `tags-probe.txt` to see which tags are blocked.
@@ -40,6 +41,7 @@ Context-to-list mapping quick reference:
 - SVG-only → `svg-restricted-events.txt`.
 - Canonical `<link>` → `canonical-link-attr.txt`.
 - Auto-exec without interaction → `js-autoexec.txt`, `iframe-srcdoc.txt`.
+ - XSShunter-style loaders → `xsshunter-inspired.txt`.
 
 ### Detecting success (Burp Intruder + grep)
 

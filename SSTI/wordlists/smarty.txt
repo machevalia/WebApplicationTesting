@@ -1,0 +1,3 @@
+{$smarty.version}
+{php}echo `id`;{/php}
+

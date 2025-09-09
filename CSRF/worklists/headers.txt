@@ -1,0 +1,13 @@
+Investigation aids
+- Check Set-Cookie: SameSite, Secure, HttpOnly
+- Check if session cookie lacks SameSite (defaults to Lax)
+- Check responses for Access-Control-Allow-Origin/Headers (for CORS context)
+- Confirm presence/absence of Origin and Referer on target requests
+
+Meta referrer directives for PoCs
+<meta name="referrer" content="no-referrer">
+<meta name="referrer" content="unsafe-url">
+
+CRLF cookie seed (URL-encoded) example
+%0d%0aSet-Cookie:%20csrfKey=YOUR-KEY%3b%20SameSite=None
+

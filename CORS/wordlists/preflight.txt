@@ -1,0 +1,14 @@
+# Methods to try
+Access-Control-Request-Method: GET
+Access-Control-Request-Method: POST
+Access-Control-Request-Method: PUT
+Access-Control-Request-Method: DELETE
+Access-Control-Request-Method: PATCH
+
+# Headers to try (comma-separated variations)
+Access-Control-Request-Headers: Content-Type
+Access-Control-Request-Headers: X-Requested-With
+Access-Control-Request-Headers: Authorization
+Access-Control-Request-Headers: X-Custom,Authorization
+Access-Control-Request-Headers: Content-Type,X-Requested-With
+

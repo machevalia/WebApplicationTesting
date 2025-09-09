@@ -1,0 +1,13 @@
+location.search
+location.hash
+location.href
+document.URL
+document.referrer
+window.name
+document.cookie
+localStorage
+sessionStorage
+postMessage (message event)
+history.pushState
+history.replaceState
+

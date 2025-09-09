@@ -1,0 +1,8 @@
+# Focus/fragment trigger for allowed elements
+tabindex=0 onfocus=print()
+# Combine with fragment focus
+# Use: add id=x on element; then navigate to #x to focus
+
+# Attribute clobbering target
+id=attributes
+

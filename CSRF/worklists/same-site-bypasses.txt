@@ -1,0 +1,14 @@
+SameSite Lax
+- Use top-level navigation via GET to include cookies
+- Convert POST endpoint to GET with `_method=POST` if app supports method override
+- Use 302/redirect chains initiated by attacker but ending on victim domain (if available)
+
+SameSite Strict
+- Find first-party client-side redirects that re-originate navigation (e.g., comment confirmation redirect)
+- Abuse sibling/cms subdomains where cookies are valid and flows redirect back
+- Require user interaction to open first-party auth window (OAuth refresh), then submit CSRF
+
+General
+- Ensure target endpoint accepts cookies on the final same-site navigation step
+- Prefer GET-compatible endpoints or override patterns
+
