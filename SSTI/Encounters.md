@@ -60,3 +60,15 @@ ${7*&}
 - Fuzzed productId and it didn't have anything. 
 - The first product has an error message because its out of stock and the message gets reflected into the page. 
 - Inducing an error reveals handlebars. 
+
+
+# Information disclosure via user-supplied objects
+## Observations
+- Can login and edit templates
+- Caused an error and found its django. Using payloads all the things - debug shows there is a secret key. 
+```
+{% debug %}
+```
+```
+{{settings.SECRET_KEY}}
+```

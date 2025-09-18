@@ -50,6 +50,7 @@ Ask for each endpoint/input:
 
 Then follow the relevant methodology:
 - XSS: See `XSS/Hunt Methodology.md` and wordlists.
+  - For exploit-server delivery of final payloads (redirect/navigation pages), see `XSS/wordlists/exploit-delivery.txt` for ready-made templates with placeholders.
 - DOM: See `DOM Vulnerabilities/Hunt Methodology.md`.
 - SQLi: See `SQL Injections/DBMS Hunt Methodology.md`.
 - CSRF: See `CSRF/Hunt Methodology.md` and PoCs.

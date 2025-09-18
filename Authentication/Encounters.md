@@ -40,3 +40,7 @@ Get acccess an account.
 - This resulted in a very long (4 second) response for 'application'.
 - Reran to target the password and found 'taylor'. 
 
+# Broken 2FA validation - bruteforcable
+## 2FA validation is enforced but broken - it is possible to bruteforce the entire keyspace of the token in the time it is valid.
+- Brute forced the valid username and password of the victim
+- Sent the secondary login request to intruder and bruteforced access. 
