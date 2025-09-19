@@ -27,6 +27,7 @@ onpointerrawupdate
 onpointerup
 onratechange
 onreset
+onresize
 onsearch
 onseeked
 onseeking
