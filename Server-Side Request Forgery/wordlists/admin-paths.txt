@@ -1,5 +1,4 @@
 /admin
-/admin/delete?username=carlos
 /login
 /actuator
 /metrics

@@ -1,0 +1,2 @@
+# When HTML replace is used for angle brackets, it only applies once. 
+<><img src=1 onerror=alert(1)>

