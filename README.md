@@ -119,3 +119,26 @@ Context tests (per input)
 
 Tie-back: Use wordlists/PoCs under each folder for focused payloads and escalation paths.
 
+---
+
+## Encounter Cliff Notes
+
+For each vulnerability area, see `encounter-cliff-notes.md` inside the corresponding folder for plain-language “how I found and exploited it” summaries distilled from your Encounters:
+- `Access Control/encounter-cliff-notes.md`
+- `Authentication/encounter-cliff-notes.md`
+- `Business Logic Vulnerabilities/encounter-cliff-notes.md`
+- `Clickjacking/encounter-cliff-notes.md`
+- `Command Injections/encounter-cliff-notes.md`
+- `CORS/encounter-cliff-notes.md`
+- `CSRF/encounter-cliff-notes.md`
+- `Deserialization/encounter-cliff-notes.md`
+- `DOM Vulnerabilities/encounter-cliff-notes.md`
+- `File Upload Vulnerabilities/encounter-cliff-notes.md`
+- `Information Disclosure/encounter-cliff-notes.md`
+- `Path Traversal/encounter-cliff-notes.md`
+- `Request Smuggling/encounter-cliff-notes.md`
+- `Server-Side Request Forgery/encounter-cliff-notes.md`
+- `SQL Injections/encounter-cliff-notes.md`
+- `SSTI/encounter-cliff-notes.md`
+- `XXE/encounter-cliff-notes.md`
+

