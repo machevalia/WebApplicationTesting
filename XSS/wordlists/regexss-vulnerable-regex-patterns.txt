@@ -1,0 +1,30 @@
+# Suspicious regex shapes that act on HTML attributes
+# These are candidates to flag for manual review.
+
+# Generic attribute value removals
+\b[aA][tT][tT][rR][Ii][Bb][Uu][Tt][Ee]\s*=\s*".*?"
+\b[aA][tT][tT][rR][Ii][Bb][Uu][Tt][Ee]\s*=\s*'.*?'
+
+# Data-* attributes
+data-[A-Za-z0-9_-]+\s*=\s*".*?"
+data-[A-Za-z0-9_-]+\s*=\s*'.*?'
+data-[A-Za-z0-9_-]+\s*=\s*["'][^"']*["']
+
+# Known real-world example
+itemprop\=\"(.*?)\"
+
+# Common attribute targets
+href\s*=\s*".*?"
+href\s*=\s*'.*?'
+src\s*=\s*".*?"
+src\s*=\s*'.*?'
+title\s*=\s*".*?"
+title\s*=\s*'.*?'
+
+# Potentially dangerous when combined with removal/replace to empty
+\s+[A-Za-z_:][-A-Za-z0-9_:.]*\s*=\s*".*?"
+\s+[A-Za-z_:][-A-Za-z0-9_:.]*\s*=\s*'.*?'
+
+# Character-class based greediness that ignores quotes
+\s+[A-Za-z_:][-A-Za-z0-9_:.]*\s*=\s*["'][^"']*["']
+

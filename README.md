@@ -51,6 +51,7 @@ Ask for each endpoint/input:
 Then follow the relevant methodology:
 - XSS: See `XSS/Hunt Methodology.md` and wordlists.
   - For exploit-server delivery of final payloads (redirect/navigation pages), see `XSS/wordlists/exploit-delivery.txt` for ready-made templates with placeholders.
+- REGEXSS (Regex-based XSS): See `XSS/REGEXSS Hunt Methodology.md`, `XSS/Regex XSS Cheatsheet.md`, and the new wordlists under `XSS/wordlists/regexss-*.txt`. A helper scanner lives at `XSS/tools/regexss_dom_scanner.py`.
 - DOM: See `DOM Vulnerabilities/Hunt Methodology.md`.
 - SQLi: See `SQL Injections/DBMS Hunt Methodology.md`.
 - CSRF: See `CSRF/Hunt Methodology.md` and PoCs.

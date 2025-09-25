@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>REGEXSS Test Harness — Greedy Regex → Attribute Promotion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 2rem; line-height: 1.4; }
+    h1 { margin-bottom: .25rem; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 1000px) { .grid { grid-template-columns: 1fr 1fr; } }
+    textarea { width: 100%; min-height: 9rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .case { border: 1px solid #ddd; border-radius: .5rem; padding: 1rem; }
+    .pre { background: #fafafa; border: 1px solid #eee; padding: .5rem; white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow: auto; }
+    .row { display: grid; grid-template-columns: 1fr; gap: .5rem; }
+    .actions { display:flex; gap: .5rem; flex-wrap: wrap; }
+    button { padding: .5rem .75rem; border-radius: .375rem; border: 1px solid #ddd; background: #fff; cursor: pointer; }
+    button:hover { background: #f6f6f6; }
+    iframe { width: 100%; height: 120px; border: 1px dashed #bbb; border-radius: .375rem; background: #fff; }
+    code { background: #fafafa; padding: .1rem .3rem; border: 1px solid #eee; border-radius: .25rem; }
+    .warn { color:#8a2d0a; font-weight:600; }
+    .ok { color:#0a7a2d; font-weight:600; }
+    .regex { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .tiny { font-size: .9em; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>REGEXSS Test Harness</h1>
+  <p class="tiny">
+    This page contains intentionally vulnerable regex-based HTML “munging” patterns to help test scanners and demonstrate attribute promotion → XSS.
+    Each case shows the <em>regex</em>, runs it against your input, and renders the result in a sandboxed iframe (scripts allowed, cross-origin disabled).
+  </p>
+
+  <h2>Input HTML</h2>
+  <p>Try these payloads (copy one into the box):</p>
+  <ul>
+    <li>
+      <code>&lt;a href='https://example.test/?attr="' title="' onfocus=alert(1) tabindex=1 x=1&gt;link&lt;/a&gt;</code>
+      <span class="tiny">— start-shift, promotes <code>onfocus</code></span>
+    </li>
+    <li>
+      <code>&lt;a title='attr="' href="foo' onfocus=alert(1) x='y'"&gt;t&lt;/a&gt;</code>
+      <span class="tiny">— end-shift with mixed quotes</span>
+    </li>
+    <li>
+      <code>&lt;img src='value=""&gt;"x' onerror="alert(1)"&gt;</code>
+      <span class="tiny">— cross-element/value collapse leaving <code>onerror</code></span>
+    </li>
+  </ul>
+
+  <textarea id="input">
+<a href='https://example.test/?attr="' title="' onfocus=alert(1) tabindex=1 x=1>link</a>
+  </textarea>
+  <div class="actions">
+    <button id="runAll">Run all cases</button>
+    <button id="reset">Reset outputs</button>
+  </div>
+
+  <div class="grid" id="cases">
+
+    <!-- Case 1: Literal /.*/ style -->
+    <div class="case" data-case="1">
+      <h3>Case 1 — <span class="warn">Vulnerable</span> literal regex <span class="regex">.replace(/attr\s*=\s*".*?"/gi, '')</span></h3>
+      <p class="tiny">Greedy-ish removal of <code>attr="...?"</code> can start inside <code>href</code> and stop at next quote, promoting following attributes.</p>
+      <div class="row">
+        <div><strong>Regex:</strong> <code class="regex">/attr\s*=\s*".*?"/gi</code></div>
+        <div><strong>Before → After</strong></div>
+        <div class="pre" id="pre1"></div>
+        <div class="pre" id="post1"></div>
+        <iframe sandbox="allow-scripts" id="frame1"></iframe>
+        <div class="actions"><button data-run="1">Run Case 1</button></div>
+      </div>
+    </div>
+
+    <!-- Case 2: new RegExp("...", "gi") -->
+    <div class="case" data-case="2">
+      <h3>Case 2 — <span class="warn">Vulnerable</span> <span class="regex">new RegExp("itemprop\\s*=\\s*(['\"])...\\1","gi")</span></h3>
+      <p class="tiny">Targets <code>itemprop="...?"</code> with backref to quote, still allows promotion on mixed quotes elsewhere.</p>
+      <div class="row">
+        <div><strong>Regex source:</strong> <code class="regex">"itemprop\\s*=\\s*(['\"]).*?\\1"</code> (flags <code>gi</code>)</div>
+        <div class="pre" id="pre2"></div>
+        <div class="pre" id="post2"></div>
+        <iframe sandbox="allow-scripts" id="frame2"></iframe>
+        <div class="actions"><button data-run="2">Run Case 2</button></div>
+      </div>
+    </div>
+
+    <!-- Case 3: replaceAll + [^'"]* -->
+    <div class="case" data-case="3">
+      <h3>Case 3 — <span class="warn">Vulnerable</span> <span class="regex">.replaceAll(/data-[\w-]+\s*=\s*["'][^"']*["']/gi, '')</span></h3>
+      <p class="tiny">Common “strip all data-*” pattern with <code>[^"']*</code>, easily crosses attributes in messy markup.</p>
+      <div class="row">
+        <div class="pre" id="pre3"></div>
+        <div class="pre" id="post3"></div>
+        <iframe sandbox="allow-scripts" id="frame3"></iframe>
+        <div class="actions"><button data-run="3">Run Case 3</button></div>
+      </div>
+    </div>
+
+    <!-- Case 4: split/join trick -->
+    <div class="case" data-case="4">
+      <h3>Case 4 — <span class="warn">Vulnerable</span> <span class="regex">.split(/title\s*=\s*["'][^"']*["']/i).join('')</span></h3>
+      <p class="tiny">Attribute surgery without <code>replace</code> — scanners should still catch it.</p>
+      <div class="row">
+        <div class="pre" id="pre4"></div>
+        <div class="pre" id="post4"></div>
+        <iframe sandbox="allow-scripts" id="frame4"></iframe>
+        <div class="actions"><button data-run="4">Run Case 4</button></div>
+      </div>
+    </div>
+
+    <!-- Case 5: function replacer -->
+    <div class="case" data-case="5">
+      <h3>Case 5 — <span class="warn">Vulnerable</span> function replacer <span class="regex">.replace(/href\s*=\s*["'][\s\S]*?["']/i, () =&gt; '')</span></h3>
+      <p class="tiny">Empty-ish function replacement; note <code>[\s\S]*?</code> plus possible <code>s</code>-like behavior.</p>
+      <div class="row">
+        <div class="pre" id="pre5"></div>
+        <div class="pre" id="post5"></div>
+        <iframe sandbox="allow-scripts" id="frame5"></iframe>
+        <div class="actions"><button data-run="5">Run Case 5</button></div>
+      </div>
+    </div>
+
+    <!-- Case 6: dynamic concatenation -->
+    <div class="case" data-case="6">
+      <h3>Case 6 — <span class="warn">Vulnerable</span> dynamic pattern <span class="regex">new RegExp("(?:^|\\s)"+attr+"\\s*=\\s*(['\"]).*?\\1","gi")</span></h3>
+      <p class="tiny">Pattern built at runtime; many scanners miss these unless they join string parts.</p>
+      <div class="row">
+        <div class="pre" id="pre6"></div>
+        <div class="pre" id="post6"></div>
+        <iframe sandbox="allow-scripts" id="frame6"></iframe>
+        <div class="actions"><button data-run="6">Run Case 6</button></div>
+      </div>
+    </div>
+
+    <!-- Case 7: Safe parser-based removal (control) -->
+    <div class="case" data-case="7">
+      <h3>Case 7 — <span class="ok">Safe (control)</span> parser-based attribute removal</h3>
+      <p class="tiny">Demonstrates safe removal using <code>DOMParser</code> and walking nodes. No greedy regex.</p>
+      <div class="row">
+        <div class="pre" id="pre7"></div>
+        <div class="pre" id="post7"></div>
+        <iframe sandbox="allow-scripts" id="frame7"></iframe>
+        <div class="actions"><button data-run="7">Run Case 7</button></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ----------------------------
+    // Vulnerable processors
+    // ----------------------------
+
+    // Case 1: Literal regex with ".*?"
+    function vuln_case1(html) {
+      return html.replace(/attr\s*=\s*".*?"/gi, '');
+    }
+
+    // Case 2: new RegExp with backref to the quote
+    function vuln_case2(html) {
+      const rx = new RegExp("itemprop\\s*=\\s*(['\"]).*?\\1", "gi");
+      return html.replace(rx, '');
+    }
+
+    // Case 3: replaceAll with [^"']*
+    function vuln_case3(html) {
+      return html.replaceAll(/data-[\w-]+\s*=\s*["'][^"']*["']/gi, '');
+    }
+
+    // Case 4: split/join removal of title="...".
+    function vuln_case4(html) {
+      return html.split(/title\s*=\s*["'][^"']*["']/i).join('');
+    }
+
+    // Case 5: function replacer + [\s\S]*?
+    function vuln_case5(html) {
+      return html.replace(/href\s*=\s*["'][\s\S]*?["']/i, () => '');
+    }
+
+    // Case 6: dynamic concatenation of pattern parts
+    function vuln_case6(html) {
+      const attr = "data-track"; // simulate dynamic attr
+      const src = "(?:^|\\s)" + attr + "\\s*=\\s*(['\"]).*?\\1";
+      const rx = new RegExp(src, "gi");
+      return html.replace(rx, '');
+    }
+
+    // Case 7: Safe parser-based attribute removal (remove itemprop + data-* only)
+    function safe_case7(html) {
+      try {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const walker = doc.createTreeWalker(doc.body || doc, NodeFilter.SHOW_ELEMENT, null);
+        let node;
+        while ((node = walker.nextNode())) {
+          // Remove only intended attributes
+          if (node.hasAttribute('itemprop')) node.removeAttribute('itemprop');
+          // Remove data-* safely
+          [...node.attributes].forEach(a => {
+            if (a.name.startsWith('data-')) node.removeAttribute(a.name);
+          });
+        }
+        return (doc.body ? doc.body.innerHTML : doc.documentElement.innerHTML) || '';
+      } catch (e) {
+        return html; // fail-closed to original
+      }
+    }
+
+    // ----------------------------
+    // Harness logic
+    // ----------------------------
+    const inputEl = document.getElementById('input');
+    const pre = n => document.getElementById('pre' + n);
+    const post = n => document.getElementById('post' + n);
+    const frame = n => document.getElementById('frame' + n);
+
+    function runCase(n, fn) {
+      const src = inputEl.value;
+      pre(n).textContent = src.trim();
+      const out = fn(src);
+      post(n).textContent = out.trim();
+
+      // Sandboxed render with scripts allowed (inline handlers will execute)
+      const f = frame(n);
+      const doc = f.contentDocument || f.contentWindow.document;
+      doc.open();
+      // Add a tiny note so you see when an alert is expected to trigger
+      doc.write(`<!doctype html><meta charset="utf-8"><body>${out}</body>`);
+      doc.close();
+    }
+
+    const map = {
+      1: vuln_case1,
+      2: vuln_case2,
+      3: vuln_case3,
+      4: vuln_case4,
+      5: vuln_case5,
+      6: vuln_case6,
+      7: safe_case7
+    };
+
+    document.getElementById('cases').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-run]');
+      if (!btn) return;
+      const n = btn.getAttribute('data-run');
+      runCase(n, map[n]);
+    });
+
+    document.getElementById('runAll').addEventListener('click', () => {
+      for (const n of Object.keys(map)) runCase(n, map[n]);
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+      for (const n of Object.keys(map)) {
+        pre(n).textContent = '';
+        post(n).textContent = '';
+        const f = frame(n);
+        const doc = f.contentDocument || f.contentWindow.document;
+        doc.open(); doc.write('<!doctype html><meta charset="utf-8"><body></body>'); doc.close();
+      }
+    });
+
+    // Optional: run all on load
+    // document.getElementById('runAll').click();
+  </script>
+</body>
+</html>
