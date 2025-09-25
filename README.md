@@ -51,6 +51,28 @@ Ask for each endpoint/input:
 Then follow the relevant methodology:
 - XSS: See `XSS/Hunt Methodology.md` and wordlists.
   - For exploit-server delivery of final payloads (redirect/navigation pages), see `XSS/wordlists/exploit-delivery.txt` for ready-made templates with placeholders.
+  - For a CTF PoC of the Cookie Sandwich technique (Tomcat RFC2109 fall-back; quoted cookie parsing), use `XSS/tools/cookie_sandwich_exploit.html`.
+    - Reference: [PortSwigger research on cookie sandwiches](https://portswigger.net/research/stealing-httponly-cookies-with-the-cookie-sandwich-technique).
+    - Required query params:
+      - `or`: open redirect URL (full), e.g. `https://victim.tld/redirect`
+      - `orp`: open redirect param name, default `next`
+      - `xss`: reflected XSS endpoint (full), e.g. `https://app.victim.tld/search`
+      - `xp`: reflected param name, default `q`
+      - `rurl`: reflecting endpoint that copies cookie into body, e.g. `https://tracking.victim.tld/json`
+      - `rc`: cookie gadget name used by reflector, default `session`
+      - `cname`: HttpOnly cookie name to extract, e.g. `PHPSESSID`
+    - Optional:
+      - `path`: cookie Path to bias ordering (default derived from `rurl` pathname)
+      - `ex`: your exfil endpoint to receive the value via `sendBeacon`/`POST`
+      - `wrap`: `1` to wrap the payload in `<script>` for HTML sinks (default `1`)
+      - `auto`: `1` to auto-redirect the victim, otherwise shows the crafted link
+    - Flow: The page crafts an XSS payload that sets `$Version=1` and two quoted cookies so the target HttpOnly cookie is sandwiched between known markers, then calls the reflecting endpoint with credentials and extracts the value. It optionally beacons to `ex`. Finally, it alerts the captured value for visual confirmation.
+    - Usage example (open in your exploit server and substitute the values):
+      `XSS/tools/cookie_sandwich_exploit.html?auto=1&or=https://victim.tld/redirect&orp=next&xss=https://app.victim.tld/search&xp=q&rurl=https://tracking.victim.tld/json&rc=session&cname=PHPSESSID&path=/json`
+
+  - Minimal, hardcoded landing page (simplest flow): `XSS/tools/cookie_sandwich_min.html`
+    - Edit the `CONFIG` object at the top with your XSS endpoint, reflecting endpoint, cookie names, and path.
+    - Host the file and send the victim directly; it auto-navigates to the XSS URL with the embedded sandwich payload.
 - REGEXSS (Regex-based XSS): See `XSS/REGEXSS Hunt Methodology.md`, `XSS/Regex XSS Cheatsheet.md`, and the new wordlists under `XSS/wordlists/regexss-*.txt`. A helper scanner lives at `XSS/tools/regexss_dom_scanner.py`.
 - DOM: See `DOM Vulnerabilities/Hunt Methodology.md`.
 - SQLi: See `SQL Injections/DBMS Hunt Methodology.md`.
