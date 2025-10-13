@@ -1,0 +1,23 @@
+action
+addr
+address
+domain
+from
+host
+href
+http_host
+load
+page
+preview
+proxy
+ref
+referer
+referrer
+rref
+site
+src
+target
+url
+uri
+web
+# also good for open redirect, SSBI, and path related attacks.
