@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>ShopFlux Marketplace</h1>
+  <p>The friendly storefront for indie makers. Try our new <a href="/products?category=Apparel">apparel</a> drop.</p>
+</section>
+
+<section class="grid">
+  {% for p in products %}
+    <article class="card">
+      <a href="/products/{{ p[0] }}">
+        <img src="{{ p[3] or '/static/css/placeholder.svg' }}" alt="{{ p[1] }}">
+        <h3>{{ p[1] }}</h3>
+        <p>${{ '%.2f' % (p[2]/100.0) }}</p>
+      </a>
+    </article>
+  {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Order tracking</h1>
+<form method="get">
+  <label>Order ID <input name="order_id" required></label>
+  <button>Track</button>
+</form>
+<p>Status: <strong>{{ status }}</strong></p>
+{% endblock %}

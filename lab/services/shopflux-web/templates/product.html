@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<article class="product">
+  <img src="{{ product[4] or '/static/css/placeholder.svg' }}" alt="{{ product[1] }}">
+  <div>
+    <h1>{{ product[1] }}</h1>
+    <p class="price">${{ '%.2f' % (product[3]/100.0) }}</p>
+    <p>{{ product[2]|safe }}</p>
+
+    <button onclick="addToCart({{ product[0] }})">Add to cart</button>
+  </div>
+</article>
+
+<section class="reviews">
+  <h2>Reviews</h2>
+  {% for r in reviews %}
+    <div class="review">
+      <strong>{{ r[0]|safe }}</strong>
+      <p>{{ r[1]|safe }}</p>{# stored XSS: review body rendered raw #}
+      <small>{{ r[2] }}</small>
+    </div>
+  {% endfor %}
+
+  <form method="post">
+    <input name="author" placeholder="Your name">
+    <textarea name="body" placeholder="Write a review..."></textarea>
+    <button type="submit">Post review</button>
+  </form>
+</section>
+
+<script>
+function addToCart(id) { localStorage.setItem("cart-" + id, "1"); alert("added"); }
+</script>
+{% endblock %}

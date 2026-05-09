@@ -1,0 +1,9 @@
+{# No X-Frame-Options / CSP frame-ancestors — embeddable cross-origin. #}
+{% extends "base.html" %}
+{% block content %}
+<h1>Confirm account closure</h1>
+<form method="post">
+  <p>This will permanently close your account.</p>
+  <button>Confirm close</button>
+</form>
+{% endblock %}

@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /backups/
+Disallow: /api/internal/
+Disallow: /.git/
+Disallow: /debug/
+Disallow: /healthz

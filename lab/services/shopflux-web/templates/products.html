@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Catalog{% if category %} — {{ category }}{% endif %}</h1>
+
+<section class="grid">
+{% for p in products %}
+  <article class="card">
+    <a href="/products/{{ p[0] }}">
+      <img src="{{ p[3] or '/static/css/placeholder.svg' }}" alt="{{ p[1] }}">
+      <h3>{{ p[1] }}</h3>
+      <p>${{ '%.2f' % (p[2]/100.0) }}</p>
+    </a>
+  </article>
+{% endfor %}
+</section>
+
+<script>
+// DOM XSS — the storefront greets you with whatever is in the URL fragment.
+const banner = document.createElement("div");
+banner.className = "banner";
+banner.innerHTML = "Welcome " + decodeURIComponent(location.hash.slice(1) || "shopper");
+document.querySelector("main").prepend(banner);
+</script>
+{% endblock %}

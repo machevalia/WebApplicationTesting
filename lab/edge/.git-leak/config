@@ -1,0 +1,7 @@
+[core]
+    repositoryformatversion = 0
+    filemode = true
+    bare = false
+[remote "origin"]
+    url = git@internal-gitlab.shopflux.local:platform/shopflux-web.git
+    fetch = +refs/heads/*:refs/remotes/origin/*

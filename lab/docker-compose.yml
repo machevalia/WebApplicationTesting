@@ -1,0 +1,238 @@
+# =============================================================================
+# Bug Bounty Practice Lab — "ShopFlux"
+#
+# A realistic, multi-service web app with vulnerabilities across the OWASP
+# top 10 plus advanced bug-bounty techniques (request smuggling, cache
+# poisoning, deserialization, SSRF chains, OAuth abuse, prototype pollution,
+# JWT confusion, GraphQL, NoSQL injection, business logic flaws).
+#
+# Bring up with:    docker compose up --build
+# Tear down with:   docker compose down -v
+#
+# Entry points (default):
+#   http://localhost:8080         ShopFlux storefront (via edge proxy)
+#   http://localhost:8081         OAuth provider (sso.shopflux.local)
+#   http://localhost:8090         Scoreboard (submit flags)
+#   http://localhost:8091         Smuggling lab front-end
+#   http://localhost:8092         Cache-poisoning lab
+#   http://localhost:8093         Deserialization lab
+#
+# Internal-only services (not bound to host) are reachable from within the
+# Docker network; you reach them by chaining through SSRF / smuggling.
+# =============================================================================
+
+networks:
+  edge_net:
+    driver: bridge
+  internal_net:
+    driver: bridge
+    internal: false   # set to true to harden internal-only routing
+  metadata_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 169.254.169.0/24
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Edge proxy — nginx in front of the SaaS. Mis-configured in deliberate
+  # ways: trusting X-Forwarded-Host, vulnerable cache key, lax CORS preflight.
+  # ---------------------------------------------------------------------------
+  edge:
+    build: ./edge
+    container_name: lab-edge
+    ports:
+      - "8080:80"
+    networks:
+      - edge_net
+      - internal_net
+    depends_on:
+      - shopflux-web
+      - shopflux-api
+
+  # ---------------------------------------------------------------------------
+  # Main SaaS web app (Python/Flask). Vulns: reflected & stored XSS, SSTI in
+  # email templating, SQLi in legacy search, path traversal in download,
+  # IDOR in /orders, weak password reset, business logic in checkout, file
+  # upload, command injection in admin PDF generator, host header poisoning.
+  # ---------------------------------------------------------------------------
+  shopflux-web:
+    build: ./services/shopflux-web
+    container_name: lab-shopflux-web
+    environment:
+      DATABASE_URL: postgresql://shopflux:shopflux@postgres:5432/shopflux
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: "do-not-use-in-prod-please"
+      ADMIN_INTERNAL_URL: "http://shopflux-admin:9000"
+      FLAG_DIR: /flags
+    volumes:
+      - ./flags:/flags:ro
+    networks:
+      - internal_net
+      - metadata_net      # so SSRF to 169.254.169.254 reaches the metadata svc
+    depends_on:
+      - postgres
+      - redis
+
+  # ---------------------------------------------------------------------------
+  # API service (Node/Express). Vulns: JWT alg=none/HS256-confusion, prototype
+  # pollution in object merge, CORS reflection, GraphQL introspection +
+  # field-level access, NoSQL injection (in-memory mongo-style store), mass
+  # assignment in PATCH /users/:id.
+  # ---------------------------------------------------------------------------
+  shopflux-api:
+    build: ./services/shopflux-api
+    container_name: lab-shopflux-api
+    environment:
+      JWT_SECRET: "shopflux-super-secret-change-me"
+      INTERNAL_TOKEN: "internal-svc-token-do-not-leak"
+      FLAG_DIR: /flags
+    volumes:
+      - ./flags:/flags:ro
+    networks:
+      - internal_net
+
+  # ---------------------------------------------------------------------------
+  # Internal admin panel (PHP). Only reachable from inside the network — get
+  # to it via SSRF from shopflux-web. Vulns: PHP unserialize on cookie,
+  # weak basic auth, command exec via "diagnostics" page, LFI in templating.
+  # ---------------------------------------------------------------------------
+  shopflux-admin:
+    build: ./services/shopflux-admin
+    container_name: lab-shopflux-admin
+    environment:
+      ADMIN_USER: shopadmin
+      ADMIN_PASS: "Pa55w0rd!shop"
+      FLAG_DIR: /flags
+    volumes:
+      - ./flags:/flags:ro
+    networks:
+      - internal_net
+    # NOTE: no host port — SSRF only
+
+  # ---------------------------------------------------------------------------
+  # OAuth / OIDC provider (Flask). Vulns: open redirect on redirect_uri,
+  # scope confusion, code reuse within window, PKCE optional.
+  # ---------------------------------------------------------------------------
+  oauth:
+    build: ./services/oauth
+    container_name: lab-oauth
+    environment:
+      OAUTH_CLIENT_ID: shopflux
+      OAUTH_CLIENT_SECRET: "shopflux-oauth-secret"
+      FLAG_DIR: /flags
+    volumes:
+      - ./flags:/flags:ro
+    ports:
+      - "8081:8081"
+    networks:
+      - internal_net
+
+  # ---------------------------------------------------------------------------
+  # Mock cloud metadata service. Pinned to 169.254.169.254 inside the metadata
+  # network. Reach via SSRF from shopflux-web → metadata.
+  # ---------------------------------------------------------------------------
+  metadata:
+    build: ./services/metadata
+    container_name: lab-metadata
+    networks:
+      metadata_net:
+        ipv4_address: 169.254.169.254
+      internal_net:
+        aliases:
+          - metadata
+          - "169.254.169.254"
+    environment:
+      FLAG_DIR: /flags
+    volumes:
+      - ./flags:/flags:ro
+
+  # ---------------------------------------------------------------------------
+  # Notifications / webhook service (Node). Used as an SSRF gadget target
+  # and for testing webhook URL validation.
+  # ---------------------------------------------------------------------------
+  notifications:
+    build: ./services/notifications
+    container_name: lab-notifications
+    networks:
+      - internal_net
+    environment:
+      FLAG_DIR: /flags
+    volumes:
+      - ./flags:/flags:ro
+
+  # ---------------------------------------------------------------------------
+  # Postgres for the main app (SQLi target).
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: lab-postgres
+    environment:
+      POSTGRES_USER: shopflux
+      POSTGRES_PASSWORD: shopflux
+      POSTGRES_DB: shopflux
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - internal_net
+
+  # ---------------------------------------------------------------------------
+  # Redis — used for sessions and as a juicy SSRF target (gopher://).
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: lab-redis
+    networks:
+      - internal_net
+    command: ["redis-server", "--appendonly", "no"]
+
+  # ---------------------------------------------------------------------------
+  # Scoreboard (Flask). Players submit flags they extract from each challenge.
+  # ---------------------------------------------------------------------------
+  scoreboard:
+    build: ./services/scoreboard
+    container_name: lab-scoreboard
+    environment:
+      FLAG_DIR: /flags
+      SCOREBOARD_SECRET: "scoreboard-session-secret"
+    volumes:
+      - ./flags:/flags:ro
+    ports:
+      - "8090:8090"
+    networks:
+      - edge_net
+
+  # ---------------------------------------------------------------------------
+  # Side challenge: HTTP Request Smuggling (CL.TE)
+  # ---------------------------------------------------------------------------
+  smuggling:
+    build: ./side-challenges/smuggling
+    container_name: lab-smuggling
+    ports:
+      - "8091:80"
+    volumes:
+      - ./flags:/flags:ro
+
+  # ---------------------------------------------------------------------------
+  # Side challenge: Web Cache Poisoning (varnish)
+  # ---------------------------------------------------------------------------
+  cache-poisoning:
+    build: ./side-challenges/cache-poisoning
+    container_name: lab-cache-poisoning
+    ports:
+      - "8092:80"
+    volumes:
+      - ./flags:/flags:ro
+
+  # ---------------------------------------------------------------------------
+  # Side challenge: Insecure Deserialization (Python pickle reachable via
+  # cookie; demonstrates classic gadget-chain RCE).
+  # ---------------------------------------------------------------------------
+  deserialization:
+    build: ./side-challenges/deserialization
+    container_name: lab-deser
+    ports:
+      - "8093:8093"
+    volumes:
+      - ./flags:/flags:ro

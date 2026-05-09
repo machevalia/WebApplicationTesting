@@ -1,0 +1,76 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>ShopFlux Lab — Scoreboard</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f172a;color:#e2e8f0;margin:0}
+header{padding:1rem 2rem;background:#020617;display:flex;align-items:center;gap:1rem}
+h1{margin:0;font-size:1.25rem}
+main{display:grid;grid-template-columns:1fr 320px;gap:1rem;padding:2rem;max-width:1200px;margin:0 auto}
+table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:8px;overflow:hidden}
+th,td{padding:.5rem .75rem;border-bottom:1px solid #334155;text-align:left;font-size:.9rem}
+th{background:#0f172a}
+.solved{color:#86efac}
+.cat{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.7rem;background:#334155}
+.flag-input{display:flex;gap:.25rem;margin-top:.25rem}
+input,button{padding:.4rem;border-radius:4px;border:1px solid #334155;background:#0f172a;color:#e2e8f0}
+button{cursor:pointer;background:#2563eb;border-color:#1d4ed8}
+.lb{background:#1e293b;border-radius:8px;padding:1rem}
+small{color:#94a3b8}
+</style></head><body>
+<header>
+<h1>ShopFlux Lab — Scoreboard</h1>
+{% if team %}
+<small>Team: <strong>{{ team }}</strong></small>
+{% else %}
+<form method=post action="/team" style="display:flex;gap:.25rem">
+  <input name=name placeholder="Your team name" required>
+  <button>Set team</button>
+</form>
+{% endif %}
+</header>
+<main>
+  <section>
+    <table>
+      <tr><th>Challenge</th><th>Category</th><th>Points</th><th>Submit</th></tr>
+      {% for c in challenges %}
+      <tr class="{{ 'solved' if c[4] else '' }}">
+        <td><code>{{ c[0] }}</code><br><small>{{ c[1] }}</small></td>
+        <td><span class="cat">{{ c[3] }}</span></td>
+        <td>{{ c[2] }}</td>
+        <td>
+          {% if c[4] %}
+            <span class="solved">solved</span>
+          {% elif team %}
+            <form class="flag-input" onsubmit="return submitFlag(this,'{{ c[0] }}')">
+              <input name=flag placeholder="FLAG{...}" required>
+              <button>Go</button>
+            </form>
+          {% else %}
+            <small>set a team first</small>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </section>
+  <aside class="lb">
+    <h3>Leaderboard</h3>
+    <ol>
+      {% for row in leaderboard %}
+        <li><strong>{{ row[0] }}</strong> — {{ row[1] }} pts ({{ row[2] }} solves)</li>
+      {% endfor %}
+    </ol>
+  </aside>
+</main>
+<script>
+async function submitFlag(form, chal) {
+    const fd = new FormData(form);
+    fd.append("chal", chal);
+    const r = await fetch("/submit", {method:"POST", body: fd, credentials:"include"});
+    const j = await r.json();
+    alert(j.msg || JSON.stringify(j));
+    if (j.ok) location.reload();
+    return false;
+}
+</script>
+</body></html>

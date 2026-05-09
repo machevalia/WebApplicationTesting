@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Import products (XML)</h1>
+<p>POST your XML body to this endpoint. Example:</p>
+<pre>curl -X POST http://localhost:8080/import/products \
+     -H 'Content-Type: application/xml' \
+     --data '&lt;catalog&gt;&lt;item name="x"/&gt;&lt;/catalog&gt;'</pre>
+{% endblock %}

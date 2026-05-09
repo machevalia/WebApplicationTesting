@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Server error</h1>
+<p class="err">{{ error }}</p>
+{% if query %}<pre>{{ query }}</pre>{% endif %}
+{% endblock %}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}ShopFlux{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/site.css">
+  {# Cache-poisoning gadget: backend reflects X-Forwarded-Host into canonical. #}
+  <link rel="canonical" href="http://{{ request.headers.get('X-Forwarded-Host') or request.host }}{{ request.path }}">
+  <meta name="csrf-token" content="(missing-on-purpose)">
+</head>
+<body>
+<header>
+  <a href="/" class="brand">ShopFlux</a>
+  <nav>
+    <a href="/products">Catalog</a>
+    <a href="/track">Track order</a>
+    <a href="/contact">Contact</a>
+    {% if user %}
+      <a href="/account">{{ user.email }}</a>
+      <a href="/logout">Logout</a>
+    {% else %}
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
+    {% endif %}
+  </nav>
+  <form action="/search" method="get" class="search">
+    <input name="q" placeholder="Search products...">
+    <button type="submit">Go</button>
+  </form>
+</header>
+<main>
+  {% block content %}{% endblock %}
+</main>
+<footer>
+  <small>ShopFlux &copy; 2026 — internal beta. Found a bug? Mail bugbounty@shopflux.local</small>
+</footer>
+</body>
+</html>
