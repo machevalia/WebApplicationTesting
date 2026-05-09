@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Hi, {{ user.email }}</h1>
+<p>Role: {{ user.role }}</p>
+
+<h2>Avatar</h2>
+<form method="post" action="/account/avatar" enctype="multipart/form-data">
+  <input type="file" name="avatar" accept=".png,.jpg,.gif,.svg">
+  <button type="submit">Upload</button>
+</form>
+
+<h2>Email</h2>
+<form method="post" action="/account/email">
+  <input name="email" placeholder="new@example.com" required>
+  <button type="submit">Change email</button>
+</form>
+
+<h2>Your orders</h2>
+<table>
+  <tr><th>Order</th><th>Total</th><th>Status</th></tr>
+  {% for o in orders %}
+  <tr><td><a href="/orders/{{ o[0] }}">#{{ o[0] }}</a></td>
+      <td>${{ '%.2f' % (o[1]/100.0) }}</td>
+      <td>{{ o[2] }}</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

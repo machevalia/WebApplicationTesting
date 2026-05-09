@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Help center</h1>
+<div id="article">Loading...</div>
+
+<script>
+// CSPT-to-XSS: slug is concatenated into the fetch path AND the response's
+// `html` field is innerHTML'd.  Pivot the fetch to /api/v1/echo with a
+// crafted query string to inject arbitrary HTML.
+//
+// Example slug:  ..%2fecho%3Fhtml%3D%3Cimg%20src%3Dx%20onerror%3D...%3E
+const slug = decodeURIComponent(location.pathname.split("/docs/")[1] || "");
+
+(async () => {
+  try {
+    const r = await fetch("/api/v1/docs/" + slug + "/render", {credentials: "include"});
+    const j = await r.json();
+    document.getElementById("article").innerHTML = j.html || "(no content)";
+  } catch (e) {
+    document.getElementById("article").textContent = String(e);
+  }
+})();
+</script>
+{% endblock %}

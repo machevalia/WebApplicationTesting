@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Order #{{ order[0] }}</h1>
+<p>Owner UID: {{ order[1] }}</p>
+<p>Total: ${{ '%.2f' % (order[2]/100.0) }}</p>
+<p>Status: {{ order[4] }}</p>
+<h2>Notes</h2>
+<pre>{{ order[3] }}</pre>
+{% endblock %}

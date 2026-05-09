@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Contact us</h1>
+{% if not sent %}
+<form method="post">
+  <label>Your name <input name="name" required></label>
+  <label>Message <textarea name="message" required></textarea></label>
+  <button>Send</button>
+</form>
+{% else %}
+<p>Preview:</p>
+<div class="preview">{{ rendered|safe }}</div>
+{% if flag %}<p class="flag">{{ flag }}</p>{% endif %}
+{% endif %}
+{% endblock %}

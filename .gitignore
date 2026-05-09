@@ -1,0 +1,6 @@
+lab/SOLUTIONS.md
+lab/.env
+lab/**/__pycache__/
+lab/**/node_modules/
+lab/**/*.pyc
+.DS_Store

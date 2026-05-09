@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+{# Reflected XSS: q is rendered with |safe — fire payload, then call
+   /api/v1/xss-callback?type=reflected from the executed JS to retrieve flag. #}
+<h1>Search results for "{{ q|safe }}"</h1>
+
+{% if results %}
+  <ul class="search-results">
+    {% for r in results %}
+      <li><a href="/products/{{ r[0] }}">{{ r[1] }}</a> — ${{ '%.2f' % (r[2]/100.0) }}</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No matches.</p>
+{% endif %}
+{% endblock %}

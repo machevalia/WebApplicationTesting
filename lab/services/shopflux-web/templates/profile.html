@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Profile editor</h1>
+<p>Edit your display name. (Lab note: this page demonstrates a CSPT pattern.)</p>
+
+<input id="name" placeholder="display name">
+<button onclick="save()">Save</button>
+<pre id="resp"></pre>
+
+<script>
+// CSPT-to-CSRF: the slug is taken from the URL path and concatenated into
+// the API URL.  No canonicalisation, so an attacker-controlled slug like
+//   ..%2fadmin%2fpromote-self
+// pivots the fetch to /api/v1/admin/promote-self while preserving the
+// JSON body and user credentials.
+const slug = decodeURIComponent(location.pathname.split("/profile/")[1] || "");
+async function save() {
+    const body = {display_name: document.getElementById("name").value};
+    const r = await fetch("/api/v1/users/" + slug, {
+        method: "POST",
+        credentials: "include",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+    });
+    document.getElementById("resp").textContent = await r.text();
+}
+</script>
+{% endblock %}
